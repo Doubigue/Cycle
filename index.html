@@ -1,529 +1,654 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PrintOS — Impression Intelligente</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ff6b9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Luna">
+<title>Luna — Cycle Féminin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --sky-dawn:   linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 20%, #6b2d6b 50%, #e8703a 75%, #f4c97a 100%);
-    --sky-day:    linear-gradient(180deg, #0066cc 0%, #1a8fe3 40%, #74c6f5 70%, #e8f4fd 100%);
-    --sky-golden: linear-gradient(180deg, #1a3a6b 0%, #2d5fa8 25%, #e8883a 60%, #f4c147 80%, #fdeea0 100%);
-    --sky-dusk:   linear-gradient(180deg, #0d0d2b 0%, #1a1060 30%, #7b2d8b 60%, #c94f4f 85%, #e8903a 100%);
-    --sky-night:  linear-gradient(180deg, #02020f 0%, #0a0a2e 40%, #0d1a4a 70%, #12204d 100%);
-    --accent: #f4c147;
-    --white: #fafaf8;
-    --dark: #0a0a14;
-    --glass: rgba(255,255,255,0.08);
-    --glass-border: rgba(255,255,255,0.15);
-  }
+/* ══════════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════════ */
+:root {
+  --rose:      #ff6b9d;
+  --rose-deep: #e0407a;
+  --blush:     #ffd6e7;
+  --lavender:  #c084fc;
+  --mint:      #6ee7b7;
+  --peach:     #fdba74;
+  --cream:     #fff8f5;
+  --dark:      #1a0a14;
+  --mid:       #4a1942;
+  --text:      #2d1033;
+  --muted:     #9b7ea4;
+  --card:      rgba(255,255,255,0.88);
+  --glass:     rgba(255,214,231,0.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ══════════════════════════════════════════
+   SKY CANVAS — animated background
+══════════════════════════════════════════ */
+#sky-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+/* Sky layers stacked, each fades in/out */
+.sky-layer {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 1.6s cubic-bezier(.4,0,.2,1);
+}
+.sky-layer.sky-visible { opacity: 1; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--dark);
-    color: var(--white);
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
-  }
+/* Dawn (dashboard) */
+.sky-dawn {
+  background: linear-gradient(180deg,
+    #0a0014 0%,
+    #2d0845 20%,
+    #8b1a6b 50%,
+    #e8663a 75%,
+    #fcd68a 100%);
+}
+/* Morning (calendar) */
+.sky-morning {
+  background: linear-gradient(180deg,
+    #1a6fa8 0%,
+    #2e9fd8 35%,
+    #74d4f5 65%,
+    #fde8c8 88%,
+    #fff5ee 100%);
+}
+/* Noon (table) */
+.sky-noon {
+  background: linear-gradient(180deg,
+    #0059b3 0%,
+    #1a8ae8 40%,
+    #5bc8f5 70%,
+    #d8f0ff 100%);
+}
+/* Golden hour (insights) */
+.sky-golden {
+  background: linear-gradient(180deg,
+    #1a2a5e 0%,
+    #2a4fa0 25%,
+    #d46b2a 55%,
+    #f0b040 75%,
+    #fde88a 100%);
+}
+/* Dusk (journal) */
+.sky-dusk {
+  background: linear-gradient(180deg,
+    #0a0825 0%,
+    #1a1050 25%,
+    #6b1f80 55%,
+    #c94050 80%,
+    #e87840 100%);
+}
+/* Night (settings) */
+.sky-night {
+  background: linear-gradient(180deg,
+    #020010 0%,
+    #080828 40%,
+    #0d1540 70%,
+    #121840 100%);
+}
 
-  /* ─── SKY BACKGROUND ─── */
-  #sky-bg {
-    position: fixed; inset: 0; z-index: 0;
-    background: var(--sky-dawn);
-    transition: background 1.4s cubic-bezier(0.4,0,0.2,1);
-  }
+/* Stars (visible on dark skies) */
+.sky-stars {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 8%  12%, rgba(255,255,255,.9) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 22% 28%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 38% 7%,  rgba(255,255,255,.85) 0%,transparent 100%),
+    radial-gradient(1px   1px   at 55% 18%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 72% 9%,  rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 88% 22%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 93% 5%,  rgba(255,255,255,.9) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 14% 42%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 48% 38%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 67% 45%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 30% 55%, rgba(255,255,255,.3) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 82% 52%, rgba(255,255,255,.4) 0%, transparent 100%);
+  opacity: 0; transition: opacity 1.6s ease;
+}
+body.sky-is-dark .sky-stars { opacity: 1; }
 
-  /* Stars */
-  .stars {
-    position: absolute; inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 15%, white 0%, transparent 100%),
-      radial-gradient(1px 1px at 25% 35%, white 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 40% 8%, white 0%, transparent 100%),
-      radial-gradient(1px 1px at 60% 20%, white 0%, transparent 100%),
-      radial-gradient(1px 1px at 75% 10%, white 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 85% 30%, white 0%, transparent 100%),
-      radial-gradient(1px 1px at 92% 5%, white 0%, transparent 100%),
-      radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 50% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 70% 50%, rgba(255,255,255,0.5) 0%, transparent 100%);
-    opacity: 1;
-    transition: opacity 1.4s ease;
-  }
-  body.sky-day .stars, body.sky-golden .stars { opacity: 0; }
+/* Clouds (visible on light skies) */
+.sky-clouds {
+  position: absolute; inset: 0; overflow: hidden;
+  opacity: 0; transition: opacity 1.6s ease;
+}
+body.sky-is-bright .sky-clouds { opacity: 1; }
+.cloud {
+  position: absolute; border-radius: 60px;
+  background: rgba(255,255,255,.72); filter: blur(10px);
+  animation: drift-cloud linear infinite;
+}
+.cloud-1 { width:240px; height:60px; top:12%; animation-duration:36s; animation-delay:-4s; }
+.cloud-2 { width:160px; height:45px; top:22%; animation-duration:48s; animation-delay:-18s; }
+.cloud-3 { width:320px; height:75px; top:8%;  animation-duration:60s; animation-delay:-30s; filter:blur(14px); }
+.cloud-4 { width:200px; height:55px; top:32%; animation-duration:42s; animation-delay:-10s; }
+@keyframes drift-cloud {
+  from { transform: translateX(-400px); }
+  to   { transform: translateX(calc(100vw + 400px)); }
+}
 
-  /* Clouds */
-  .clouds {
-    position: absolute; inset: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: opacity 1.4s ease;
-  }
-  body.sky-day .clouds, body.sky-golden .clouds { opacity: 1; }
+/* Moon */
+.sky-moon {
+  position: absolute; width:60px; height:60px; border-radius:50%;
+  background: radial-gradient(circle at 38% 38%, #f8f4e0, #c8c0a0);
+  box-shadow: 0 0 28px 10px rgba(200,210,255,.35);
+  top:10%; right:14%;
+  opacity: 0; transition: opacity 1.6s ease;
+}
+body.sky-is-dark .sky-moon { opacity: 1; }
 
-  .cloud {
-    position: absolute;
-    border-radius: 50px;
-    filter: blur(8px);
-    animation: driftCloud linear infinite;
-  }
-  .c1 { width: 220px; height: 60px; top: 15%; left: -260px; background: rgba(255,255,255,0.7); animation-duration: 28s; animation-delay: 0s; }
-  .c2 { width: 160px; height: 45px; top: 25%; left: -200px; background: rgba(255,255,255,0.5); animation-duration: 38s; animation-delay: -12s; }
-  .c3 { width: 300px; height: 70px; top: 10%; left: -360px; background: rgba(255,255,255,0.6); animation-duration: 45s; animation-delay: -22s; }
-  .c4 { width: 180px; height: 50px; top: 35%; left: -220px; background: rgba(255,255,255,0.4); animation-duration: 32s; animation-delay: -7s; }
+/* Sun */
+.sky-sun {
+  position: absolute; width:72px; height:72px; border-radius:50%;
+  background: radial-gradient(circle, #fffbe0 20%, #ffc830 60%, #ff8c00 100%);
+  box-shadow: 0 0 50px 22px rgba(255,180,40,.4), 0 0 100px 50px rgba(255,120,0,.15);
+  opacity: 0; transition: opacity 1.6s ease, bottom 1.6s cubic-bezier(.4,0,.2,1);
+  left: 50%; transform: translateX(-50%);
+  bottom: 8%;
+}
+body.sky-is-day    .sky-sun { opacity: 1; bottom: 55%; }
+body.sky-is-sunset .sky-sun { opacity: .9; bottom: 6%; }
 
-  @keyframes driftCloud {
-    from { transform: translateX(0); }
-    to   { transform: translateX(calc(100vw + 400px)); }
-  }
+/* ══════════════════════════════════════════
+   SPLASH SCREEN
+══════════════════════════════════════════ */
+#splash {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #020010 0%, #0a0028 40%, #1a0838 70%, #2d0845 100%);
+  transition: opacity .9s cubic-bezier(.4,0,.2,1), transform .9s cubic-bezier(.4,0,.2,1);
+}
+#splash.splash-exit {
+  opacity: 0; pointer-events: none; transform: scale(1.04);
+}
 
-  /* Sun / Moon */
-  .celestial {
-    position: absolute; border-radius: 50%;
-    transition: all 1.4s cubic-bezier(0.4,0,0.2,1);
-  }
-  .sun {
-    width: 80px; height: 80px;
-    background: radial-gradient(circle, #fff8c0, #ffc93c, #ff8c00);
-    box-shadow: 0 0 40px 20px rgba(255,180,50,0.4), 0 0 80px 40px rgba(255,140,0,0.2);
-    bottom: 25%; left: 50%; transform: translateX(-50%);
-    opacity: 0; transition: opacity 1.4s ease, bottom 1.4s ease;
-  }
-  body.sky-day .sun { bottom: 60%; opacity: 1; }
-  body.sky-golden .sun { bottom: 10%; opacity: 0.9; }
+.splash-stars {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 20%, white 0%, transparent 100%),
+    radial-gradient(1px   1px   at 30% 10%, white 0%, transparent 100%),
+    radial-gradient(2px   2px   at 50% 15%, rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px   1px   at 70% 8%,  white 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 85% 25%, white 0%, transparent 100%),
+    radial-gradient(1px   1px   at 10% 50%, rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px   1px   at 40% 40%, rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px   1px   at 60% 35%, rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px   1px   at 90% 45%, rgba(255,255,255,.4) 0%,transparent 100%);
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  from { opacity: .6; } to { opacity: 1; }
+}
 
-  .moon {
-    width: 55px; height: 55px;
-    background: radial-gradient(circle at 35% 35%, #f0f0e8, #c8c8b8);
-    box-shadow: 0 0 30px 10px rgba(200,210,255,0.3);
-    top: 12%; right: 15%;
-    opacity: 1; transition: opacity 1.4s ease;
-  }
-  body.sky-day .moon { opacity: 0; }
-  body.sky-golden .moon { opacity: 0; }
+.splash-moon-ring {
+  width: 110px; height: 110px; border-radius: 50%;
+  border: 2px solid rgba(255,214,231,.25);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 32px;
+  animation: splash-float 3s ease-in-out infinite alternate;
+  box-shadow: 0 0 40px 10px rgba(192,132,252,.15);
+}
+@keyframes splash-float {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-12px); }
+}
+.splash-moon-inner {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #fff8f0, #e8c8f0 50%, #c084fc 100%);
+  box-shadow: 0 0 30px 8px rgba(192,132,252,.4);
+  animation: splash-glow 2s ease-in-out infinite alternate;
+}
+@keyframes splash-glow {
+  from { box-shadow: 0 0 20px 6px rgba(192,132,252,.3); }
+  to   { box-shadow: 0 0 45px 15px rgba(255,107,157,.4); }
+}
 
-  /* ─── SPLASH SCREEN ─── */
-  #splash {
-    position: fixed; inset: 0; z-index: 100;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    background: var(--sky-night);
-    transition: opacity 0.8s ease;
-  }
-  #splash.hidden { opacity: 0; pointer-events: none; }
+.splash-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(52px, 14vw, 80px); font-weight: 700;
+  background: linear-gradient(135deg, #ffd6e7, #ff6b9d 40%, #c084fc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: -1px; line-height: 1; margin-bottom: 8px;
+  animation: splash-rise .8s cubic-bezier(.22,1,.36,1) .2s both;
+}
+.splash-sub {
+  font-size: 12px; font-weight: 400; letter-spacing: 5px;
+  text-transform: uppercase; color: rgba(255,214,231,.55);
+  animation: splash-rise .8s cubic-bezier(.22,1,.36,1) .35s both;
+  margin-bottom: 48px;
+}
+@keyframes splash-rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  .splash-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(52px, 10vw, 88px);
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -2px;
-    line-height: 1;
-    margin-bottom: 8px;
-    animation: splashReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  .splash-logo span { color: var(--accent); }
+.splash-bar-wrap {
+  width: 180px; height: 2px;
+  background: rgba(255,214,231,.12); border-radius: 2px; overflow: hidden;
+  animation: splash-rise .5s ease .6s both;
+}
+.splash-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #ff6b9d, #c084fc);
+  border-radius: 2px;
+  animation: fill-bar 2.6s cubic-bezier(.4,0,.2,1) .8s forwards;
+}
+@keyframes fill-bar { to { width: 100%; } }
 
-  .splash-sub {
-    font-size: 14px;
-    font-weight: 300;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    animation: splashReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-  }
+.splash-hint {
+  margin-top: 18px; font-size: 12px;
+  color: rgba(255,214,231,.35); letter-spacing: 1px;
+  animation: splash-rise .5s ease .7s both;
+}
 
-  .splash-loader {
-    margin-top: 60px;
-    width: 160px; height: 2px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-    animation: splashReveal 0.6s ease 0.6s both;
-  }
-  .splash-loader-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), #ff8c47);
-    animation: loadFill 2.2s cubic-bezier(0.4,0,0.2,1) 0.8s forwards;
-    width: 0%;
-  }
+/* ══════════════════════════════════════════
+   AUTH SCREEN
+══════════════════════════════════════════ */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 150;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .8s ease;
+}
+#auth-screen.auth-visible { opacity: 1; pointer-events: all; }
 
-  @keyframes splashReveal {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes loadFill {
-    0%   { width: 0%; }
-    60%  { width: 75%; }
-    100% { width: 100%; }
-  }
+.auth-card {
+  background: rgba(255,255,255,.18);
+  backdrop-filter: blur(28px);
+  border: 1px solid rgba(255,214,231,.3);
+  border-radius: 32px;
+  padding: 48px 36px 40px;
+  width: 100%; max-width: 400px;
+  text-align: center;
+  transform: translateY(24px) scale(.97);
+  transition: transform .8s cubic-bezier(.22,1,.36,1), opacity .8s ease;
+  box-shadow: 0 32px 80px rgba(10,0,20,.4), inset 0 1px 0 rgba(255,255,255,.2);
+}
+#auth-screen.auth-visible .auth-card {
+  transform: translateY(0) scale(1);
+}
 
-  /* ─── AUTH SCREEN ─── */
-  #auth-screen {
-    position: fixed; inset: 0; z-index: 50;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.8s ease;
-  }
-  #auth-screen.visible { opacity: 1; pointer-events: all; }
+.auth-moon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #fff0f8, #e8b8e8 50%, #c084fc 100%);
+  box-shadow: 0 0 24px 8px rgba(192,132,252,.35);
+  margin: 0 auto 20px;
+}
+.auth-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem; font-weight: 700;
+  background: linear-gradient(135deg, #fff0f8, #ffd6e7 40%, #c084fc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 4px;
+}
+.auth-tagline {
+  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  color: rgba(255,255,255,.45); margin-bottom: 36px;
+}
+.auth-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; color: #fff; margin-bottom: 10px;
+}
+.auth-desc {
+  font-size: 13px; color: rgba(255,255,255,.55);
+  line-height: 1.7; margin-bottom: 32px;
+}
 
-  .auth-card {
-    background: rgba(10,10,20,0.6);
-    backdrop-filter: blur(24px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 52px 48px;
-    max-width: 440px; width: 90%;
-    text-align: center;
-    transform: translateY(20px);
-    transition: transform 0.8s cubic-bezier(0.22,1,0.36,1);
-    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
-  }
-  #auth-screen.visible .auth-card { transform: translateY(0); }
+.btn-google-auth {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; padding: 16px 20px;
+  background: rgba(255,255,255,.95); color: #1a0a14;
+  border: none; border-radius: 16px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; letter-spacing: .2px;
+  box-shadow: 0 6px 28px rgba(0,0,0,.35);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.btn-google-auth:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0,0,0,.45);
+}
+.btn-google-auth:active { transform: translateY(0); }
+.btn-google-auth svg { width: 22px; height: 22px; flex-shrink: 0; }
 
-  .auth-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px; font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .auth-logo span { color: var(--accent); }
+.auth-or {
+  margin: 16px 0; font-size: 12px; color: rgba(255,255,255,.3);
+  display: flex; align-items: center; gap: 12px;
+}
+.auth-or::before, .auth-or::after {
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.1);
+}
 
-  .auth-tagline {
-    font-size: 13px; color: rgba(255,255,255,0.45);
-    letter-spacing: 3px; text-transform: uppercase;
-    margin-bottom: 40px;
-  }
+.btn-demo-auth {
+  width: 100%; padding: 13px;
+  background: rgba(255,214,231,.1); color: rgba(255,214,231,.7);
+  border: 1px solid rgba(255,214,231,.2); border-radius: 14px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer;
+  transition: background .2s ease;
+}
+.btn-demo-auth:hover { background: rgba(255,214,231,.18); }
 
-  .auth-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px; margin-bottom: 10px;
-  }
-  .auth-desc {
-    font-size: 14px; color: rgba(255,255,255,0.55);
-    line-height: 1.7; margin-bottom: 36px;
-  }
+.auth-privacy {
+  margin-top: 20px; font-size: 11px; color: rgba(255,255,255,.25); line-height: 1.5;
+}
 
-  .google-btn {
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    width: 100%; padding: 15px 24px;
-    background: var(--white); color: #1a1a2e;
-    border: none; border-radius: 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px; font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  }
-  .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
-  .google-btn:active { transform: translateY(0); }
-  .google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+/* ══════════════════════════════════════════
+   PAGE TRANSITION WIPE
+══════════════════════════════════════════ */
+#sky-wipe {
+  position: fixed; inset: 0; z-index: 90;
+  pointer-events: none; opacity: 0;
+  transition: opacity .35s ease;
+}
+#sky-wipe.wipe-on { opacity: .55; }
 
-  .auth-privacy {
-    margin-top: 20px; font-size: 11px;
-    color: rgba(255,255,255,0.3); line-height: 1.5;
-  }
+/* ══════════════════════════════════════════
+   MAIN APP SHELL
+══════════════════════════════════════════ */
+#app {
+  position: relative; z-index: 10;
+  max-width: 480px; margin: 0 auto; padding: 0 0 80px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .7s ease;
+}
+#app.app-visible { opacity: 1; pointer-events: all; }
 
-  /* ─── APP SHELL ─── */
-  #app {
-    position: fixed; inset: 0; z-index: 10;
-    display: flex; flex-direction: column;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.8s ease;
-  }
-  #app.visible { opacity: 1; pointer-events: all; }
+/* Background orbs */
+.bg-orbs{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;transition:background 1.6s ease}
+.orb1{width:600px;height:600px;top:-200px;right:-150px;animation:drift1 12s ease-in-out infinite alternate}
+.orb2{width:450px;height:450px;bottom:-100px;left:-100px;animation:drift2 15s ease-in-out infinite alternate}
+.orb3{width:300px;height:300px;top:40%;right:10%;animation:drift3 10s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(-60px,80px)}}
+@keyframes drift2{to{transform:translate(80px,-60px)}}
+@keyframes drift3{to{transform:translate(-40px,40px)}}
 
-  /* NAV */
-  nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 32px;
-    background: rgba(0,0,0,0.2);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--glass-border);
-    position: relative; z-index: 20;
-  }
+/* ── Header ── */
+header{padding:40px 24px 20px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10}
+.logo{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(--rose-deep),var(--lavender));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo span{font-style:italic;font-weight:400}
+.header-right{display:flex;gap:10px;align-items:center}
+.sync-btn{width:44px;height:44px;border-radius:50%;background:var(--card);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 4px 20px rgba(255,107,157,.2);transition:transform .3s;backdrop-filter:blur(10px)}
+.sync-btn:hover{transform:rotate(180deg)}
+.sync-btn.spinning{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.user-pill{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:28px;background:var(--card);border:none;box-shadow:0 4px 16px rgba(255,107,157,.15);cursor:pointer;backdrop-filter:blur(10px)}
+.user-avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+.user-name{font-size:.75rem;font-weight:600;color:var(--text);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-  .nav-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px; font-weight: 700;
-  }
-  .nav-logo span { color: var(--accent); }
+/* ── Nav ── */
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid rgba(255,107,157,.15);display:flex;z-index:100;padding:8px 0 env(safe-area-inset-bottom,8px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:500;transition:color .2s,transform .2s}
+.nav-item.active{color:var(--rose-deep)}
+.nav-icon{font-size:1.3rem;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.nav-item.active .nav-icon{transform:scale(1.2) translateY(-2px)}
 
-  .nav-tabs {
-    display: flex; gap: 4px;
-    background: rgba(0,0,0,0.25);
-    padding: 4px; border-radius: 12px;
-    border: 1px solid var(--glass-border);
-  }
-  .nav-tab {
-    padding: 8px 20px; border: none; background: transparent;
-    color: rgba(255,255,255,0.55); border-radius: 9px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.25s ease;
-    letter-spacing: 0.3px;
-  }
-  .nav-tab:hover { color: var(--white); background: rgba(255,255,255,0.08); }
-  .nav-tab.active { background: rgba(255,255,255,0.15); color: var(--white); }
+/* ── Pages ── */
+.page{display:none;padding:0 16px}
+.page.active{display:block;animation:pageIn .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes pageIn{
+  from{opacity:0;transform:translateY(16px) scale(.99)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
 
-  .nav-user {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .user-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    border: 2px solid var(--glass-border);
-    background: linear-gradient(135deg, #f4c147, #ff8c47);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600; color: var(--dark);
-    overflow: hidden;
-  }
-  .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .user-name { font-size: 13px; color: rgba(255,255,255,0.7); }
+/* ══════════════════════════════════════════
+   APP CONTENT STYLES (preserved from original)
+══════════════════════════════════════════ */
+.card{background:var(--card);border-radius:24px;padding:20px;margin-bottom:16px;box-shadow:0 4px 24px rgba(180,40,100,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7)}
+.phase-hero{background:linear-gradient(135deg,var(--rose-deep),var(--lavender));border-radius:28px;padding:28px 24px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
+.phase-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.1)}
+.phase-hero::before{content:'';position:absolute;right:40px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
+.phase-label{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:6px}
+.phase-name{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:4px}
+.phase-desc{font-size:.85rem;opacity:.85;line-height:1.5;max-width:240px}
+.phase-day{position:absolute;right:24px;top:24px;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;backdrop-filter:blur(8px)}
+.phase-day-num{font-size:1.5rem;font-weight:700;line-height:1}
+.phase-day-lbl{font-size:.6rem;opacity:.8;text-transform:uppercase;letter-spacing:.05em}
+.countdown{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:rgba(255,255,255,.6);backdrop-filter:blur(8px);font-size:.8rem;font-weight:600;color:var(--rose-deep);margin-top:10px;border:1px solid rgba(255,107,157,.2)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:20px;padding:16px;box-shadow:0 4px 20px rgba(180,40,100,.07);border:1px solid rgba(255,255,255,.7)}
+.stat-icon{font-size:1.4rem;margin-bottom:6px}
+.stat-val{font-size:1.4rem;font-weight:700;color:var(--rose-deep);line-height:1.1}
+.stat-lbl{font-size:.72rem;color:var(--muted);margin-top:2px}
+.cloud-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;margin-bottom:16px;font-size:.82rem;cursor:pointer;transition:opacity .2s}
+.cloud-bar:hover{opacity:.85}
+.cloud-bar.ok{background:rgba(110,231,183,.15);border:1px solid rgba(110,231,183,.3)}
+.cloud-bar.warn{background:rgba(253,186,116,.15);border:1px solid rgba(253,186,116,.3)}
+.cloud-bar.error{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3)}
+.cloud-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:#10b981;animation:pulse-dot 2s infinite}
+.dot-warn{background:#f97316}
+.dot-error{background:#ef4444}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.cycle-bar{height:10px;border-radius:10px;overflow:hidden;display:flex;margin:8px 0 4px;background:#f3e8f5}
+.bar-seg{height:100%;transition:width .4s ease}
+.bar-period{background:linear-gradient(90deg,#ff6b9d,#e0407a)}
+.bar-follicular{background:linear-gradient(90deg,#93c5fd,#60a5fa)}
+.bar-fertile{background:linear-gradient(90deg,#6ee7b7,#34d399)}
+.bar-ovulation{background:linear-gradient(90deg,#fdba74,#f97316);flex:0 0 8px}
+.bar-luteal{background:linear-gradient(90deg,#c084fc,#a855f7)}
+.bar-labels{display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted);margin-top:3px}
+.mini-cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mini-cal-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700}
+.mini-cal-nav{display:flex;gap:8px}
+.cal-nav-btn{width:32px;height:32px;border-radius:50%;background:var(--glass);border:none;cursor:pointer;font-size:.9rem;transition:background .2s}
+.cal-nav-btn:hover{background:var(--blush)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:.65rem;color:var(--muted);font-weight:500;padding:4px 0;text-transform:uppercase;letter-spacing:.05em}
+.cal-day{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;cursor:pointer;transition:transform .15s;position:relative}
+.cal-day:hover{transform:scale(1.1)}
+.cal-day.empty{cursor:default}
+.cal-day.period{background:linear-gradient(135deg,#ff6b9d,#e0407a);color:#fff}
+.cal-day.fertile{background:linear-gradient(135deg,#6ee7b7,#34d399);color:#fff}
+.cal-day.ovulation{background:linear-gradient(135deg,#fdba74,#f97316);color:#fff;box-shadow:0 0 0 3px rgba(249,115,22,.3)}
+.cal-day.today-ring{box-shadow:0 0 0 2px var(--rose-deep)}
+.cal-day.has-note::after{content:'•';position:absolute;bottom:1px;font-size:.5rem;color:var(--lavender)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-period{background:linear-gradient(135deg,#ff6b9d,#e0407a)}
+.dot-fertile{background:linear-gradient(135deg,#6ee7b7,#34d399)}
+.dot-ovulation{background:linear-gradient(135deg,#fdba74,#f97316)}
+.sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.timeline-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;padding:0 4px}
+.btn-sm{padding:6px 14px;border-radius:20px;background:rgba(255,107,157,.12);color:var(--rose-deep);border:none;cursor:pointer;font-size:.75rem;font-weight:600;transition:background .2s}
+.btn-sm:hover{background:rgba(255,107,157,.22)}
+.timeline-table-wrap{overflow-x:auto;border-radius:20px;box-shadow:0 4px 24px rgba(180,40,100,.09)}
+table.timeline{width:100%;border-collapse:collapse;background:var(--card);font-size:.8rem;backdrop-filter:blur(10px)}
+table.timeline thead tr{background:linear-gradient(135deg,var(--rose-deep),var(--lavender));color:#fff}
+table.timeline th{padding:12px 10px;text-align:left;font-weight:600;letter-spacing:.04em;font-size:.73rem;text-transform:uppercase;white-space:nowrap}
+table.timeline td{padding:10px 10px;vertical-align:middle;border-bottom:1px solid rgba(255,107,157,.08)}
+table.timeline tr:last-child td{border-bottom:none}
+table.timeline tbody tr:hover td{background:rgba(255,107,157,.05)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.badge-period{background:rgba(255,107,157,.18);color:#c0215a}
+.badge-fertile{background:rgba(110,231,183,.25);color:#065f46}
+.badge-ovulation{background:rgba(253,186,116,.3);color:#92400e}
+.badge-luteal{background:rgba(192,132,252,.2);color:#6b21a8}
+.badge-follicular{background:rgba(147,197,253,.25);color:#1e40af}
+.settings-section{margin-bottom:20px}
+.settings-section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;padding:0 4px}
+.input-group{margin-bottom:14px}
+.input-label{font-size:.82rem;font-weight:500;color:var(--text);margin-bottom:6px;display:block}
+.input-field{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);transition:border-color .2s,box-shadow .2s;outline:none}
+.input-field:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(255,107,157,.15)}
+.btn-primary{width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--rose),var(--lavender));color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;letter-spacing:.02em;box-shadow:0 6px 20px rgba(255,107,157,.35);transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,107,157,.45)}
+.btn-secondary{width:100%;padding:13px;border-radius:14px;background:rgba(255,107,157,.1);color:var(--rose-deep);border:1.5px solid rgba(255,107,157,.2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;transition:background .2s;margin-top:10px}
+.btn-secondary:hover{background:rgba(255,107,157,.18)}
+.btn-tertiary{width:100%;padding:13px;border-radius:14px;background:rgba(192,132,252,.12);color:#7c3aed;border:1.5px solid rgba(192,132,252,.25);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;transition:background .2s;margin-top:10px}
+.btn-tertiary:hover{background:rgba(192,132,252,.22)}
+.btn-drive{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;transition:transform .2s,opacity .2s;margin-top:10px}
+.btn-drive:hover{transform:translateY(-1px);opacity:.92}
+.btn-drive:disabled{opacity:.5;cursor:not-allowed;transform:none}
+code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size:.78rem}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:12px 24px;border-radius:30px;font-size:.85rem;font-weight:500;opacity:0;transition:opacity .3s,transform .3s;z-index:200;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sec-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.mood-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.mood-btn{width:52px;height:52px;border-radius:50%;background:var(--glass);border:2px solid transparent;cursor:pointer;font-size:1.6rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.mood-btn.selected{border-color:var(--rose);background:var(--blush);transform:scale(1.1)}
+.mood-btn:hover{transform:scale(1.08)}
+.symptom-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.symptom-chip{padding:6px 14px;border-radius:20px;background:var(--glass);border:1.5px solid transparent;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--mid);transition:all .2s}
+.symptom-chip.selected{background:rgba(255,107,157,.2);border-color:var(--rose);color:var(--rose-deep)}
+.insight-card{border-radius:20px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.insight-card.tip{background:linear-gradient(135deg,rgba(110,231,183,.15),rgba(52,211,153,.08));border:1px solid rgba(110,231,183,.3)}
+.insight-card.warning{background:linear-gradient(135deg,rgba(253,186,116,.2),rgba(249,115,22,.08));border:1px solid rgba(253,186,116,.4)}
+.insight-card.info{background:linear-gradient(135deg,rgba(192,132,252,.15),rgba(168,85,247,.08));border:1px solid rgba(192,132,252,.3)}
+.insight-icon{font-size:1.8rem;margin-bottom:6px}
+.insight-title{font-weight:700;font-size:.9rem;margin-bottom:4px}
+.insight-body{font-size:.8rem;color:var(--muted);line-height:1.5}
+.backup-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.backup-item:last-child{border-bottom:none}
+.backup-info{flex:1}
+.backup-name{font-size:.82rem;font-weight:600;color:var(--text)}
+.backup-date{font-size:.72rem;color:var(--muted);margin-top:2px}
+.backup-actions{display:flex;gap:8px}
+.backup-btn{padding:5px 12px;border-radius:12px;border:none;cursor:pointer;font-size:.72rem;font-weight:600;transition:all .2s}
+.backup-restore{background:rgba(66,133,244,.12);color:#4285f4}
+.backup-restore:hover{background:rgba(66,133,244,.22)}
+.note-area{width:100%;padding:12px;border-radius:14px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);resize:vertical;min-height:80px;outline:none;transition:border-color .2s}
+.note-area:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(255,107,157,.15)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:.85rem;font-weight:500}
+.toggle{width:44px;height:24px;border-radius:12px;background:#e2d1e8;border:none;cursor:pointer;position:relative;transition:background .3s}
+.toggle.on{background:var(--rose)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.toggle.on::after{transform:translateX(20px)}
+body.dark{background:#1a0a14;color:#f0d8e8}
+body.dark .card{background:rgba(60,20,50,.7);border-color:rgba(255,107,157,.15)}
+body.dark .stat-card{background:rgba(60,20,50,.7);border-color:rgba(255,107,157,.15)}
+body.dark nav{background:rgba(26,10,20,.95)}
+body.dark .input-field{background:rgba(60,20,50,.8);color:#f0d8e8;border-color:rgba(255,107,157,.25)}
+body.dark .note-area{background:rgba(60,20,50,.8);color:#f0d8e8}
+body.dark .bg-orbs .orb{opacity:.15}
+body.dark .symptom-chip{background:rgba(255,107,157,.1);color:#d8a0c4}
+body.dark .mood-btn{background:rgba(255,107,157,.1)}
+.pill-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.pill-row:last-child{border-bottom:none}
+.pill-name{font-size:.85rem;font-weight:500}
+.pill-time{font-size:.75rem;color:var(--muted)}
+.pill-check{width:28px;height:28px;border-radius:50%;background:rgba(110,231,183,.15);border:2px solid rgba(110,231,183,.4);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.pill-check.done{background:rgba(110,231,183,.4);border-color:#10b981}
+.fertility-bar-wrap{margin:12px 0}
+.fertility-score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fertility-score-val{font-size:1.6rem;font-weight:700;color:var(--rose-deep)}
+.fertility-bar{height:14px;border-radius:8px;background:#f3e8f5;overflow:hidden}
+.fertility-fill{height:100%;border-radius:8px;transition:width .6s ease;background:linear-gradient(90deg,#ff6b9d,#6ee7b7)}
+.nav-badge{width:8px;height:8px;border-radius:50%;background:var(--rose);position:absolute;top:6px;right:12px;animation:pulse-dot 2s infinite}
+.search-input{width:100%;padding:10px 16px 10px 40px;border-radius:14px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);outline:none;margin-bottom:12px;position:relative}
+.search-wrap{position:relative;margin-bottom:10px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none}
+.history-chart{height:80px;display:flex;align-items:flex-end;gap:4px;padding:8px 0}
+.history-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:height .4s ease;position:relative;cursor:pointer}
+.history-bar-label{font-size:.55rem;color:var(--muted);text-align:center;margin-top:4px}
+.history-bar-val{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.6rem;color:var(--rose-deep);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .2s}
+.history-bar:hover .history-bar-val{opacity:1}
 
-  /* PAGES */
-  #pages { flex: 1; position: relative; overflow: hidden; }
+/* Print */
+@media print {
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  body{background:#fff !important;color:#000 !important}
+  .bg-orbs,nav,header .header-right,.toast,#modal-overlay,#sky-canvas,#splash,#auth-screen{display:none !important}
+  #page-settings,#page-calendar,#page-insights,#page-journal,#page-dashboard{display:none !important}
+  #page-table{display:block !important;padding:0 !important}
+  header{padding:16px 0 8px !important}
+  .logo{-webkit-text-fill-color:#e0407a !important;color:#e0407a !important}
+  .timeline-table-wrap{overflow:visible !important;box-shadow:none !important;border:1px solid #ddd !important;border-radius:8px !important}
+  table.timeline{font-size:.82rem !important}
+  table.timeline thead tr{background:#e0407a !important;color:#fff !important}
+  .btn-sm{display:none !important}
+  #print-header{display:block !important}
+  #app{padding:0 16px !important;max-width:100% !important;opacity:1 !important;pointer-events:all !important}
+}
+#print-header{display:none}
 
-  .page {
-    position: absolute; inset: 0;
-    padding: 48px 40px;
-    overflow-y: auto;
-    opacity: 0;
-    transform: translateY(30px);
-    pointer-events: none;
-    transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
-  }
-  .page.active {
-    opacity: 1; transform: translateY(0);
-    pointer-events: all;
-  }
-  .page.exit {
-    opacity: 0; transform: translateY(-20px);
-  }
+/* Modal */
+#modal-overlay{position:fixed;inset:0;background:rgba(26,10,20,.6);backdrop-filter:blur(8px);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+#modal-overlay.open{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--cream);border-radius:28px 28px 0 0;padding:28px 20px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease}
+#modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(155,126,164,.4);margin:0 auto 20px}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:16px;text-align:center}
+body.dark .modal-sheet{background:#2a0a22}
 
-  /* PAGE HEADER */
-  .page-header { margin-bottom: 36px; }
-  .page-header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 700; line-height: 1.1;
-    margin-bottom: 8px;
-  }
-  .page-header p { font-size: 14px; color: rgba(255,255,255,0.5); }
-
-  /* GRID */
-  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-
-  /* GLASS CARD */
-  .card {
-    background: var(--glass);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 28px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-  }
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-    border-color: rgba(255,255,255,0.25);
-  }
-
-  .stat-card { text-align: center; }
-  .stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 48px; font-weight: 700;
-    color: var(--accent); line-height: 1;
-    margin-bottom: 6px;
-  }
-  .stat-label { font-size: 12px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 2px; }
-
-  .card-title { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
-  .card-sub { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 20px; }
-
-  /* UPLOAD ZONE */
-  .upload-zone {
-    border: 2px dashed rgba(255,255,255,0.2);
-    border-radius: 20px;
-    padding: 60px 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: rgba(255,255,255,0.02);
-    margin-bottom: 24px;
-  }
-  .upload-zone:hover {
-    border-color: var(--accent);
-    background: rgba(244,193,71,0.05);
-  }
-  .upload-icon { font-size: 40px; margin-bottom: 16px; display: block; }
-  .upload-title { font-size: 18px; font-weight: 500; margin-bottom: 6px; }
-  .upload-hint { font-size: 13px; color: rgba(255,255,255,0.4); }
-
-  /* BTN */
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 12px 24px; border-radius: 12px; border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
-    cursor: pointer; transition: all 0.2s ease;
-  }
-  .btn-primary {
-    background: var(--accent); color: var(--dark);
-  }
-  .btn-primary:hover { background: #ffd166; transform: translateY(-1px); }
-  .btn-ghost {
-    background: var(--glass); color: var(--white);
-    border: 1px solid var(--glass-border);
-  }
-  .btn-ghost:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
-
-  /* FILE LIST */
-  .file-item {
-    display: flex; align-items: center; gap: 16px;
-    padding: 14px 20px;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    margin-bottom: 10px;
-    transition: all 0.2s ease;
-  }
-  .file-item:hover { background: rgba(255,255,255,0.1); }
-  .file-icon { font-size: 24px; flex-shrink: 0; }
-  .file-info { flex: 1; }
-  .file-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-  .file-meta { font-size: 12px; color: rgba(255,255,255,0.4); }
-  .file-actions { display: flex; gap: 8px; }
-
-  /* STATUS BADGE */
-  .badge {
-    display: inline-block; padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .badge-ready { background: rgba(100,200,100,0.2); color: #6dc96d; }
-  .badge-pending { background: rgba(244,193,71,0.2); color: var(--accent); }
-  .badge-sent { background: rgba(100,150,255,0.2); color: #7eb3ff; }
-
-  /* PROGRESS */
-  .progress { height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; }
-  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), #ff8c47); transition: width 0.4s ease; }
-
-  /* SKY TRANSITION OVERLAY */
-  #sky-transition {
-    position: fixed; inset: 0; z-index: 60;
-    pointer-events: none; opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  #sky-transition.flash { opacity: 1; }
-
-  /* SETTINGS */
-  .setting-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-  .setting-label { font-size: 14px; }
-  .setting-hint { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 3px; }
-
-  .toggle {
-    width: 44px; height: 24px; border-radius: 12px;
-    background: rgba(255,255,255,0.15); border: none; cursor: pointer;
-    position: relative; transition: background 0.3s ease;
-  }
-  .toggle.on { background: var(--accent); }
-  .toggle::after {
-    content: ''; position: absolute;
-    top: 3px; left: 3px;
-    width: 18px; height: 18px;
-    border-radius: 50%; background: white;
-    transition: transform 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-  .toggle.on::after { transform: translateX(20px); }
-
-  /* DRIVE FILES */
-  .drive-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px;
-    margin-top: 20px;
-  }
-  .drive-file {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    border-radius: 16px; padding: 20px 16px; text-align: center;
-    cursor: pointer; transition: all 0.2s ease;
-  }
-  .drive-file:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.25); }
-  .drive-file-icon { font-size: 32px; margin-bottom: 10px; display: block; }
-  .drive-file-name { font-size: 12px; color: rgba(255,255,255,0.7); word-break: break-word; line-height: 1.4; }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-
-  /* TOAST */
-  #toast-container {
-    position: fixed; bottom: 32px; right: 32px; z-index: 200;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .toast {
-    background: rgba(20,20,30,0.9); backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-left: 3px solid var(--accent);
-    padding: 14px 20px; border-radius: 12px;
-    font-size: 13px; max-width: 320px;
-    animation: toastIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-  }
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateX(20px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:rgba(255,107,157,.3);border-radius:3px}
 </style>
 </head>
 <body>
 
-<!-- SKY BG -->
-<div id="sky-bg">
-  <div class="stars"></div>
-  <div class="clouds">
-    <div class="cloud c1"></div>
-    <div class="cloud c2"></div>
-    <div class="cloud c3"></div>
-    <div class="cloud c4"></div>
+<!-- ══════════════════════════════════
+     SKY CANVAS
+══════════════════════════════════ -->
+<div id="sky-canvas">
+  <div class="sky-layer sky-dawn sky-visible" id="sky-dawn"></div>
+  <div class="sky-layer sky-morning" id="sky-morning"></div>
+  <div class="sky-layer sky-noon" id="sky-noon"></div>
+  <div class="sky-layer sky-golden" id="sky-golden"></div>
+  <div class="sky-layer sky-dusk" id="sky-dusk"></div>
+  <div class="sky-layer sky-night" id="sky-night"></div>
+  <div class="sky-stars"></div>
+  <div class="sky-clouds">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="cloud cloud-4"></div>
   </div>
-  <div class="celestial sun"></div>
-  <div class="celestial moon"></div>
+  <div class="sky-moon"></div>
+  <div class="sky-sun"></div>
 </div>
 
-<!-- SKY TRANSITION FLASH -->
-<div id="sky-transition"></div>
+<!-- Wipe overlay for transitions -->
+<div id="sky-wipe"></div>
 
-<!-- TOAST -->
-<div id="toast-container"></div>
-
-<!-- ════ SPLASH ════ -->
+<!-- ══════════════════════════════════
+     SPLASH SCREEN
+══════════════════════════════════ -->
 <div id="splash">
-  <div class="splash-logo">Print<span>OS</span></div>
-  <div class="splash-sub">Impression Intelligente</div>
-  <div class="splash-loader">
-    <div class="splash-loader-fill" id="splash-fill"></div>
+  <div class="splash-stars"></div>
+  <div class="splash-moon-ring">
+    <div class="splash-moon-inner"></div>
   </div>
+  <div class="splash-logo">Lu<span style="font-style:italic;font-weight:400">na</span></div>
+  <div class="splash-sub">Suivi de cycle féminin</div>
+  <div class="splash-bar-wrap">
+    <div class="splash-bar-fill"></div>
+  </div>
+  <div class="splash-hint">Chargement…</div>
 </div>
 
-<!-- ════ AUTH ════ -->
+<!-- ══════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════ -->
 <div id="auth-screen">
   <div class="auth-card">
-    <div class="auth-logo">Print<span>OS</span></div>
-    <div class="auth-tagline">Impression Intelligente</div>
-
-    <div class="auth-title">Bienvenue 🌅</div>
+    <div class="auth-moon"></div>
+    <div class="auth-logo">Luna</div>
+    <div class="auth-tagline">Cycle Féminin</div>
+    <div class="auth-title">Bienvenue 🌙</div>
     <div class="auth-desc">
-      Connectez-vous avec Google Drive pour accéder à vos documents et gérer vos impressions en toute simplicité.
+      Connectez-vous avec Google pour synchroniser vos données en toute sécurité dans votre Drive.
     </div>
-
-    <button class="google-btn" onclick="signInGoogle()">
+    <button class="btn-google-auth" id="btn-google-signin" onclick="signInGoogle()">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -532,561 +657,1174 @@
       </svg>
       Continuer avec Google
     </button>
-
+    <div class="auth-or">ou</div>
+    <button class="btn-demo-auth" onclick="enterDemoMode()">✨ Continuer en mode démo</button>
     <div class="auth-privacy">
-      En vous connectant, vous acceptez nos conditions d'utilisation.<br/>
-      Vos données restent privées et sécurisées.
+      Vos données sont stockées dans votre Drive personnel.<br>
+      Luna ne partage aucune information.
     </div>
   </div>
 </div>
 
-<!-- ════ APP ════ -->
+<!-- ══════════════════════════════════
+     APP
+══════════════════════════════════ -->
+<div class="bg-orbs">
+  <div class="orb orb1" id="orb1"></div>
+  <div class="orb orb2" id="orb2"></div>
+  <div class="orb orb3" id="orb3"></div>
+</div>
+
 <div id="app">
-  <nav>
-    <div class="nav-logo">Print<span>OS</span></div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" data-page="dashboard">🏠 Tableau de bord</button>
-      <button class="nav-tab" data-page="print">🖨️ Imprimer</button>
-      <button class="nav-tab" data-page="drive">☁️ Drive</button>
-      <button class="nav-tab" data-page="history">📋 Historique</button>
-      <button class="nav-tab" data-page="settings">⚙️ Paramètres</button>
+  <header>
+    <div class="logo">Lu<span>na</span></div>
+    <div class="header-right">
+      <button class="sync-btn" id="sync-btn" onclick="quickSyncDrive()" title="Synchroniser Google Drive">☁️</button>
+      <button class="user-pill" id="user-pill" onclick="navigate('settings')" style="display:none">
+        <div class="user-avatar" id="user-avatar-header">🌸</div>
+        <span class="user-name" id="user-name-header">Compte</span>
+      </button>
     </div>
-    <div class="nav-user">
-      <div class="user-avatar" id="user-avatar">U</div>
-      <span class="user-name" id="user-name-display">Utilisateur</span>
+  </header>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div id="phase-hero" class="phase-hero">
+      <div class="phase-label">Phase actuelle</div>
+      <div class="phase-name" id="hero-phase-name">—</div>
+      <div class="phase-desc" id="hero-phase-desc">Configurez votre cycle dans les paramètres.</div>
+      <div id="hero-countdown" class="countdown" style="display:none">
+        <span>🩸</span><span id="hero-countdown-text"></span>
+      </div>
+      <div class="phase-day" id="hero-day-badge">
+        <div class="phase-day-num" id="hero-day-num">—</div>
+        <div class="phase-day-lbl">Jour</div>
+      </div>
     </div>
-  </nav>
-
-  <div id="pages">
-
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <h1 id="greeting-text">Bonjour ✨</h1>
-        <p>Votre tableau de bord d'impression</p>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="sec-title">🌸 Score de fertilité</div>
+        <div id="fertility-label" style="font-size:.75rem;font-weight:600;color:var(--muted)">—</div>
       </div>
-
-      <div class="grid-3" style="margin-bottom:28px;">
-        <div class="card stat-card">
-          <div class="stat-num">24</div>
-          <div class="stat-label">Documents imprimés</div>
+      <div class="fertility-bar-wrap">
+        <div class="fertility-score-row">
+          <div class="fertility-score-val" id="fertility-score">—</div>
+          <div style="font-size:.75rem;color:var(--muted)">/ 100</div>
         </div>
-        <div class="card stat-card">
-          <div class="stat-num">3</div>
-          <div class="stat-label">En attente</div>
-        </div>
-        <div class="card stat-card">
-          <div class="stat-num">8</div>
-          <div class="stat-label">Imprimantes actives</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">⚡ Impression rapide</div>
-          <div class="card-sub">Glissez un fichier depuis Drive</div>
-          <div class="upload-zone" onclick="navigateTo('print')">
-            <span class="upload-icon">🖨️</span>
-            <div class="upload-title">Cliquer pour imprimer</div>
-            <div class="upload-hint">PDF, Word, Images</div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">📊 Activité récente</div>
-          <div class="card-sub">Vos dernières impressions</div>
-          <div id="recent-list">
-            <div class="file-item">
-              <div class="file-icon">📄</div>
-              <div class="file-info">
-                <div class="file-name">Rapport_Q3.pdf</div>
-                <div class="file-meta">Il y a 2h · 12 pages</div>
-              </div>
-              <span class="badge badge-sent">Envoyé</span>
-            </div>
-            <div class="file-item">
-              <div class="file-icon">📋</div>
-              <div class="file-info">
-                <div class="file-name">Contrat_v2.docx</div>
-                <div class="file-meta">Il y a 5h · 4 pages</div>
-              </div>
-              <span class="badge badge-ready">Prêt</span>
-            </div>
-            <div class="file-item">
-              <div class="file-icon">🖼️</div>
-              <div class="file-info">
-                <div class="file-name">Affiche_event.png</div>
-                <div class="file-meta">Hier · 1 page</div>
-              </div>
-              <span class="badge badge-pending">En attente</span>
-            </div>
-          </div>
+        <div class="fertility-bar">
+          <div class="fertility-fill" id="fertility-fill" style="width:0%"></div>
         </div>
       </div>
     </div>
-
-    <!-- PRINT -->
-    <div class="page" id="page-print">
-      <div class="page-header">
-        <h1>🖨️ Nouvelle impression</h1>
-        <p>Configurez et envoyez votre document</p>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🩸</div><div class="stat-val" id="stat-next-period">—</div><div class="stat-lbl">Prochaines règles</div></div>
+      <div class="stat-card"><div class="stat-icon">🌿</div><div class="stat-val" id="stat-fertile">—</div><div class="stat-lbl">Fenêtre fertile</div></div>
+      <div class="stat-card"><div class="stat-icon">🥚</div><div class="stat-val" id="stat-ovulation">—</div><div class="stat-lbl">Ovulation (Jour J)</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val" id="stat-cycle-day">—</div><div class="stat-lbl">Jour du cycle</div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:8px">Progression du cycle</div>
+      <div class="cycle-bar">
+        <div class="bar-seg bar-period" id="bar-period" style="width:0%"></div>
+        <div class="bar-seg bar-follicular" id="bar-follicular" style="width:0%"></div>
+        <div class="bar-seg bar-fertile" id="bar-fertile-seg" style="width:0%"></div>
+        <div class="bar-seg bar-ovulation" id="bar-ov" style="width:0%"></div>
+        <div class="bar-seg bar-luteal" id="bar-luteal" style="width:0%"></div>
       </div>
+      <div class="bar-labels"><span>Règles</span><span>Folliculaire</span><span>Fertile</span><span>Lutéale</span></div>
+      <div id="progress-info" style="font-size:.8rem;color:var(--muted);margin-top:8px">—</div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">😊 Comment vous sentez-vous ?</div>
+      <div class="mood-grid" id="quick-mood-grid">
+        <button class="mood-btn" data-mood="😊" onclick="quickMood('😊')">😊</button>
+        <button class="mood-btn" data-mood="😢" onclick="quickMood('😢')">😢</button>
+        <button class="mood-btn" data-mood="😤" onclick="quickMood('😤')">😤</button>
+        <button class="mood-btn" data-mood="😴" onclick="quickMood('😴')">😴</button>
+        <button class="mood-btn" data-mood="🥰" onclick="quickMood('🥰')">🥰</button>
+      </div>
+      <div id="quick-mood-saved" style="font-size:.8rem;color:var(--muted);text-align:center;display:none">✅ Humeur enregistrée !</div>
+    </div>
+    <div id="cloud-status-dash" class="cloud-bar warn" onclick="navigate('settings')">
+      <div class="cloud-dot dot-warn" id="cloud-dot-dash"></div>
+      <div id="cloud-text-dash">☁️ Google Drive non connecté — Appuyez pour configurer</div>
+    </div>
+  </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">📁 Choisir un fichier</div>
-          <div class="card-sub">Depuis votre appareil ou Google Drive</div>
-          <div class="upload-zone" id="upload-zone">
-            <span class="upload-icon">📂</span>
-            <div class="upload-title">Glissez votre fichier ici</div>
-            <div class="upload-hint">ou cliquez pour parcourir</div>
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn btn-primary" onclick="simulateUpload()">📎 Parcourir</button>
-            <button class="btn btn-ghost" onclick="navigateTo('drive')">☁️ Depuis Drive</button>
+  <!-- CALENDAR -->
+  <div id="page-calendar" class="page">
+    <div class="card">
+      <div class="mini-cal-header">
+        <span class="mini-cal-title" id="cal-month-title">—</span>
+        <div class="mini-cal-nav">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot dot-period"></div>Règles</div>
+        <div class="legend-item"><div class="legend-dot dot-fertile"></div>Fenêtre fertile</div>
+        <div class="legend-item"><div class="legend-dot dot-ovulation"></div>Ovulation</div>
+      </div>
+    </div>
+    <div id="cal-day-detail" class="card" style="display:none">
+      <div class="sec-title" id="cal-detail-title">—</div>
+      <div id="cal-detail-body" style="font-size:.85rem;color:var(--muted);margin-top:6px">—</div>
+      <div style="margin-top:12px">
+        <textarea class="note-area" id="cal-note-area" placeholder="📝 Ajouter une note pour ce jour…" rows="3"></textarea>
+        <button class="btn-primary" style="padding:10px;font-size:.82rem;margin-top:8px" onclick="saveCalNote()">💾 Enregistrer la note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div id="page-table" class="page">
+    <div id="print-header" style="margin-bottom:16px">
+      <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0407a">Luna — Calendrier Cycle Féminin</div>
+      <div style="font-size:.8rem;color:#666;margin-top:4px">Généré le <span id="print-date"></span></div>
+    </div>
+    <div class="sec-header">
+      <div class="timeline-title">Calendrier annuel</div>
+      <button class="btn-sm" onclick="printTable()">🖨️ Imprimer</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="table-search" placeholder="Rechercher un cycle, une date…" oninput="filterTable()">
+    </div>
+    <div class="timeline-table-wrap">
+      <table class="timeline">
+        <thead><tr><th>#</th><th>Début règles</th><th>Fin règles</th><th>Fertile ↑</th><th>Jour J 🥚</th><th>Fertile ↓</th><th>Phase</th></tr></thead>
+        <tbody id="timeline-body">
+          <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Configurez votre cycle dans les paramètres</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="sec-title" style="margin-bottom:10px">📊 Historique des cycles</div>
+      <div class="history-chart" id="history-chart"></div>
+      <div style="display:flex;justify-content:center;gap:16px;font-size:.7rem;color:var(--muted);margin-top:4px">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#ff6b9d;border-radius:2px;display:inline-block"></span>Règles</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#6ee7b7;border-radius:2px;display:inline-block"></span>Fenêtre fertile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div id="page-insights" class="page">
+    <div style="padding:0 4px;margin-bottom:16px"><div class="timeline-title">✨ Insights & Conseils</div></div>
+    <div id="insights-container"></div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">💊 Rappels du jour</div>
+      <div id="pill-list">
+        <div class="pill-row"><div><div class="pill-name">🌿 Acide folique</div><div class="pill-time">Matin — 09:00</div></div><button class="pill-check" id="pill-folate" onclick="togglePill('pill-folate')">○</button></div>
+        <div class="pill-row"><div><div class="pill-name">☀️ Vitamine D</div><div class="pill-time">Midi — 12:00</div></div><button class="pill-check" id="pill-vitd" onclick="togglePill('pill-vitd')">○</button></div>
+        <div class="pill-row"><div><div class="pill-name">🫐 Magnésium</div><div class="pill-time">Soir — 21:00</div></div><button class="pill-check" id="pill-mag" onclick="togglePill('pill-mag')">○</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📈 Statistiques</div>
+      <div id="cycle-stats-body" style="font-size:.85rem;color:var(--muted);line-height:2">—</div>
+    </div>
+  </div>
+
+  <!-- JOURNAL -->
+  <div id="page-journal" class="page">
+    <div style="padding:0 4px;margin-bottom:16px"><div class="timeline-title">📓 Journal & Symptômes</div></div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">😊 Humeur aujourd'hui</div>
+      <div class="mood-grid" id="journal-mood-grid">
+        <button class="mood-btn" data-mood="😊" onclick="setJournalMood('😊')">😊</button>
+        <button class="mood-btn" data-mood="😢" onclick="setJournalMood('😢')">😢</button>
+        <button class="mood-btn" data-mood="😤" onclick="setJournalMood('😤')">😤</button>
+        <button class="mood-btn" data-mood="😴" onclick="setJournalMood('😴')">😴</button>
+        <button class="mood-btn" data-mood="🥰" onclick="setJournalMood('🥰')">🥰</button>
+        <button class="mood-btn" data-mood="😰" onclick="setJournalMood('😰')">😰</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">🩺 Symptômes du jour</div>
+      <div class="symptom-list" id="symptom-list">
+        <span class="symptom-chip" onclick="toggleSymptom(this,'crampes')">🤕 Crampes</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'maux tête')">🤯 Maux de tête</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'fatigue')">😩 Fatigue</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'ballonnements')">💨 Ballonnements</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'acné')">🌸 Acné</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'sensibilité seins')">💗 Sensibilité seins</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'nausées')">🤢 Nausées</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'douleurs dos')">🔙 Douleurs dos</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📝 Note du jour</div>
+      <textarea class="note-area" id="journal-note" placeholder="Comment vous sentez-vous aujourd'hui ?" rows="4"></textarea>
+      <button class="btn-primary" style="margin-top:10px" onclick="saveJournalEntry()">💾 Enregistrer l'entrée</button>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📖 Entrées récentes</div>
+      <div id="recent-entries"><div style="font-size:.82rem;color:var(--muted);text-align:center;padding:12px">Aucune entrée pour le moment</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page">
+    <!-- Account card -->
+    <div class="settings-section">
+      <div class="settings-section-title">👤 Compte connecté</div>
+      <div class="card" id="account-card">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+          <div class="user-avatar" id="settings-avatar" style="width:52px;height:52px;font-size:22px;border-radius:50%">🌸</div>
+          <div>
+            <div id="settings-user-name" style="font-size:1rem;font-weight:600;color:var(--text)">—</div>
+            <div id="settings-user-email" style="font-size:.78rem;color:var(--muted)">—</div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-title">⚙️ Options d'impression</div>
-          <div class="card-sub">Personnalisez votre impression</div>
-
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Imprimante</div>
-              <div class="setting-hint">HP LaserJet Pro · Bureau</div>
-            </div>
-            <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;">Changer</button>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Copies</div>
-              <div class="setting-hint">Nombre d'exemplaires</div>
-            </div>
-            <input type="number" value="1" min="1" style="width:60px;background:var(--glass);border:1px solid var(--glass-border);color:white;padding:8px;border-radius:8px;text-align:center;font-family:'DM Sans',sans-serif;">
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Recto-verso</div>
-              <div class="setting-hint">Impression des deux côtés</div>
-            </div>
-            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Couleur</div>
-              <div class="setting-hint">Impression couleur ou N&B</div>
-            </div>
-            <button class="toggle" onclick="this.classList.toggle('on')"></button>
-          </div>
-          <div style="margin-top:24px;">
-            <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sendPrint()">
-              🚀 Envoyer à l'impression
-            </button>
-          </div>
+        <div id="gdrive-status-card" class="cloud-bar warn" style="margin-bottom:14px;cursor:default">
+          <div class="cloud-dot dot-warn" id="gdrive-dot"></div>
+          <div id="gdrive-status-text">Non connecté à Google Drive</div>
         </div>
+        <button class="btn-secondary" onclick="syncGDrive(false)">☁️ Sauvegarder maintenant</button>
+        <button class="btn-tertiary" onclick="restoreGDrive()">📥 Restaurer depuis Drive</button>
+        <button class="btn-secondary" style="background:rgba(66,133,244,.1);color:#4285f4;border-color:rgba(66,133,244,.2)" onclick="showBackupList()">📋 Liste des sauvegardes</button>
+        <button class="btn-secondary" style="margin-top:14px;background:rgba(239,68,68,.07);color:#ef4444;border-color:rgba(239,68,68,.2)" onclick="signOut()">🚪 Se déconnecter</button>
       </div>
     </div>
 
-    <!-- DRIVE -->
-    <div class="page" id="page-drive">
-      <div class="page-header">
-        <h1>☁️ Google Drive</h1>
-        <p>Vos documents dans le cloud</p>
-      </div>
-
-      <div class="card" style="margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#4285F4,#34A853);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">☁️</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;" id="drive-account">Connecté en tant que…</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.4);">8.2 Go utilisés sur 15 Go</div>
-            <div class="progress" style="margin-top:8px;"><div class="progress-fill" style="width:55%"></div></div>
-          </div>
-          <button class="btn btn-ghost" onclick="loadDriveFiles()">🔄 Actualiser</button>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-        <button class="btn btn-ghost" style="font-size:12px;">📁 Mes fichiers</button>
-        <button class="btn btn-ghost" style="font-size:12px;">⭐ Favoris</button>
-        <button class="btn btn-ghost" style="font-size:12px;">📤 Partagés</button>
-        <button class="btn btn-ghost" style="font-size:12px;">🕐 Récents</button>
-      </div>
-
-      <div class="drive-grid" id="drive-grid">
-        <!-- populated by JS -->
-      </div>
-    </div>
-
-    <!-- HISTORY -->
-    <div class="page" id="page-history">
-      <div class="page-header">
-        <h1>📋 Historique</h1>
-        <p>Toutes vos impressions passées</p>
-      </div>
+    <!-- Cycle settings -->
+    <div class="settings-section">
+      <div class="settings-section-title">Votre cycle</div>
       <div class="card">
-        <div id="history-list"></div>
+        <div class="input-group">
+          <label class="input-label">📅 Date des dernières règles</label>
+          <input type="date" class="input-field" id="input-last-period">
+        </div>
+        <div class="input-group">
+          <label class="input-label">🔄 Durée du cycle (jours)</label>
+          <input type="number" class="input-field" id="input-cycle-length" min="21" max="45" value="28">
+        </div>
+        <div class="input-group">
+          <label class="input-label">🩸 Durée des règles (jours)</label>
+          <input type="number" class="input-field" id="input-period-length" min="2" max="10" value="5">
+        </div>
+        <button class="btn-primary" onclick="saveSettings()">💾 Enregistrer & calculer</button>
       </div>
     </div>
 
-    <!-- SETTINGS -->
-    <div class="page" id="page-settings">
-      <div class="page-header">
-        <h1>⚙️ Paramètres</h1>
-        <p>Configuration de l'application</p>
-      </div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title" style="margin-bottom:16px;">👤 Compte</div>
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
-            <div class="user-avatar" id="settings-avatar" style="width:56px;height:56px;font-size:20px;">U</div>
-            <div>
-              <div id="settings-name" style="font-size:16px;font-weight:500;">Utilisateur</div>
-              <div id="settings-email" style="font-size:13px;color:rgba(255,255,255,0.4);">email@gmail.com</div>
-            </div>
-          </div>
-          <button class="btn btn-ghost" style="width:100%;justify-content:center;" onclick="signOut()">
-            🚪 Se déconnecter
-          </button>
+    <!-- Export/Import -->
+    <div class="settings-section">
+      <div class="settings-section-title">📤 Export / Import local</div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button class="btn-primary" style="padding:12px;font-size:.85rem" onclick="exportJSON()">💾 Exporter JSON</button>
+          <button class="btn-secondary" style="margin:0;padding:12px;font-size:.85rem" onclick="document.getElementById('import-json').click()">📂 Importer JSON</button>
         </div>
-        <div class="card">
-          <div class="card-title" style="margin-bottom:16px;">🎨 Apparence</div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Transitions ciel</div>
-              <div class="setting-hint">Animation lors des changements de page</div>
-            </div>
-            <button class="toggle on" id="sky-toggle" onclick="this.classList.toggle('on')"></button>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Notifications</div>
-              <div class="setting-hint">Alertes d'impression</div>
-            </div>
-            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Démarrage automatique</div>
-              <div class="setting-hint">Lance au démarrage du système</div>
-            </div>
-            <button class="toggle" onclick="this.classList.toggle('on')"></button>
-          </div>
+        <input type="file" id="import-json" accept=".json" style="display:none" onchange="importJSON(event)">
+      </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="settings-section">
+      <div class="settings-section-title">⚙️ Préférences</div>
+      <div class="card">
+        <div class="toggle-row">
+          <span class="toggle-label">🌙 Mode sombre</span>
+          <button class="toggle" id="toggle-dark" onclick="toggleDark()"></button>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">🔔 Alertes période imminente</span>
+          <button class="toggle on" id="toggle-notif" onclick="toggleNotif()"></button>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">☁️ Sauvegarde auto</span>
+          <button class="toggle on" id="toggle-autosave" onclick="toggleAutosave()"></button>
         </div>
       </div>
     </div>
 
+    <!-- About -->
+    <div class="settings-section">
+      <div class="settings-section-title">ℹ️ À propos</div>
+      <div class="card" style="text-align:center;padding:24px">
+        <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;background:linear-gradient(135deg,var(--rose-deep),var(--lavender));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">Luna v3.0</div>
+        <div style="font-size:.82rem;color:var(--muted)">Suivi de cycle menstruel • Données privées et sécurisées</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:8px">🔒 Vos données vous appartiennent</div>
+        <button class="btn-secondary" style="margin-top:14px" onclick="resetApp()">🗑️ Réinitialiser l'application</button>
+      </div>
+    </div>
+  </div>
+</div><!-- /#app -->
+
+<!-- Nav -->
+<nav>
+  <button class="nav-item active" id="nav-dashboard" onclick="navigate('dashboard')"><span class="nav-icon">🌸</span><span>Accueil</span></button>
+  <button class="nav-item" id="nav-calendar" onclick="navigate('calendar')"><span class="nav-icon">📆</span><span>Calendrier</span></button>
+  <button class="nav-item" id="nav-table" onclick="navigate('table')"><span class="nav-icon">📋</span><span>Tableau</span></button>
+  <button class="nav-item" id="nav-insights" onclick="navigate('insights')"><span class="nav-icon">✨</span><span>Insights</span></button>
+  <button class="nav-item" id="nav-journal" onclick="navigate('journal')"><span class="nav-icon">📓</span><span>Journal</span></button>
+  <button class="nav-item" id="nav-settings" onclick="navigate('settings')"><span class="nav-icon">⚙️</span><span>Réglages</span></button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">—</div>
+    <div id="modal-body"></div>
   </div>
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
-const CLIENT_ID = '296255887794-sh6pjr8fa7jh5r38r200ddjp683ok2se.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive.readonly profile email';
+/* ═══════════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════════ */
+const GDRIVE_CLIENT_ID = '296255887794-sh6pjr8fa7jh5r38r200ddjp683ok2se.apps.googleusercontent.com';
+const GDRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+const LUNA_FILENAME    = 'luna-cycle-data.json';
+const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const DAYS_FR   = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
-// ─── STATE ────────────────────────────────────────────────
-let currentPage = 'dashboard';
-let userData = null;
-let tokenClient = null;
-let accessToken = null;
-
-const skyThemes = {
-  dashboard: 'sky-dawn',
-  print:     'sky-day',
-  drive:     'sky-golden',
-  history:   'sky-dusk',
-  settings:  'sky-night'
+/* ═══════════════════════════════════════════════
+   SKY THEMES per page
+═══════════════════════════════════════════════ */
+const SKY_THEMES = {
+  dashboard: { layer:'dawn',   dark:true,  bright:false, day:false, sunset:false },
+  calendar:  { layer:'morning',dark:false, bright:true,  day:true,  sunset:false },
+  table:     { layer:'noon',   dark:false, bright:true,  day:true,  sunset:false },
+  insights:  { layer:'golden', dark:false, bright:false, day:false, sunset:true  },
+  journal:   { layer:'dusk',   dark:true,  bright:false, day:false, sunset:false },
+  settings:  { layer:'night',  dark:true,  bright:false, day:false, sunset:false },
 };
 
-// ─── SPLASH ───────────────────────────────────────────────
-window.addEventListener('load', () => {
+const ORB_PALETTES = {
+  dashboard: ['#ffc2d8,#ff6b9d','#c4b5fd,#a855f7','#6ee7b7,#34d399'],
+  calendar:  ['#bfdbfe,#60a5fa','#fde68a,#f59e0b','#a7f3d0,#10b981'],
+  table:     ['#bae6fd,#38bdf8','#e0f2fe,#0ea5e9','#d1fae5,#34d399'],
+  insights:  ['#fcd34d,#f59e0b','#fda4af,#f43f5e','#c4b5fd,#a855f7'],
+  journal:   ['#f5d0fe,#d946ef','#c4b5fd,#7c3aed','#fda4af,#e11d48'],
+  settings:  ['#1e1b4b,#312e81','#0f172a,#1e293b','#0c0a1e,#1e1b4b'],
+};
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let state = {
+  lastPeriod: null, cycleLength: 28, periodLength: 5,
+  gdriveConnected: false, gdriveToken: null, gdriveFileId: null,
+  autoSave: true, darkMode: false, notifEnabled: true,
+  cycles: [], journal: {}, calNotes: {}, pillsToday: {},
+  lastAutoSave: null, backupHistory: [], currentCalDate: null,
+  userInfo: null
+};
+let tokenClient = null;
+let currentPage = 'dashboard';
+
+/* ═══════════════════════════════════════════════
+   SPLASH → AUTH → APP FLOW
+═══════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  // Load GIS script
+  const gisScript = document.createElement('script');
+  gisScript.src = 'https://accounts.google.com/gsi/client';
+  gisScript.async = true; gisScript.defer = true;
+  document.head.appendChild(gisScript);
+
+  // Splash timer
   setTimeout(() => {
     const splash = document.getElementById('splash');
-    splash.classList.add('hidden');
+    splash.classList.add('splash-exit');
     setTimeout(() => {
       splash.style.display = 'none';
-      showAuth();
-    }, 800);
+      // Check if we have a saved session
+      loadLocal();
+      if (state.gdriveToken && state.gdriveConnected && state.userInfo) {
+        enterApp(state.userInfo, false);
+      } else {
+        showAuthScreen();
+      }
+    }, 900);
   }, 3400);
+
+  document.getElementById('print-date').textContent =
+    new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 });
 
-function showAuth() {
+function showAuthScreen() {
   const auth = document.getElementById('auth-screen');
-  auth.classList.add('visible');
-  setSky('sky-dawn');
+  auth.classList.add('auth-visible');
+  setSky('dawn');
 }
 
-// ─── GOOGLE SIGN-IN ───────────────────────────────────────
+/* ─── Google Sign-In ─── */
 function signInGoogle() {
-  if (typeof google === 'undefined') {
-    toast('⚠️ Chargement du SDK Google en cours…');
-    // Demo mode fallback
-    setTimeout(() => demoLogin(), 800);
+  const btn = document.getElementById('btn-google-signin');
+  btn.textContent = '⏳ Connexion…'; btn.disabled = true;
+
+  if (typeof google === 'undefined' || !google.accounts) {
+    setTimeout(() => {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continuer avec Google`;
+      btn.disabled = false;
+      showToast('❌ SDK Google non chargé — vérifiez votre connexion');
+    }, 1200);
     return;
   }
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (resp) => {
-      if (resp.error) { toast('❌ Connexion annulée'); return; }
-      accessToken = resp.access_token;
-      fetchUserInfo();
-    }
-  });
-  tokenClient.requestAccessToken();
+
+  try {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GDRIVE_CLIENT_ID,
+      scope: GDRIVE_SCOPES,
+      callback: async (tokenResp) => {
+        if (tokenResp.error) {
+          btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continuer avec Google`;
+          btn.disabled = false;
+          showToast('❌ Connexion annulée'); return;
+        }
+        state.gdriveToken = tokenResp.access_token;
+        state.gdriveConnected = true;
+        // Fetch user info
+        try {
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${state.gdriveToken}` }
+          });
+          const info = await res.json();
+          state.userInfo = info;
+          enterApp(info, true);
+        } catch(e) {
+          enterApp({ name:'Utilisatrice', email:'', picture:null }, true);
+        }
+      }
+    });
+    tokenClient.requestAccessToken();
+  } catch(e) {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22">...</svg>Continuer avec Google`;
+    btn.disabled = false;
+    showToast('❌ ' + e.message);
+  }
 }
 
-function fetchUserInfo() {
-  fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  })
-  .then(r => r.json())
-  .then(info => {
-    userData = info;
-    loginSuccess(info);
-  })
-  .catch(() => {
-    toast('⚠️ Impossible de récupérer le profil');
-    demoLogin();
-  });
+function enterDemoMode() {
+  state.userInfo = { name:'Mode Démo', email:'demo@luna.app', picture:null };
+  state.gdriveConnected = false;
+  enterApp(state.userInfo, false);
 }
 
-function demoLogin() {
-  userData = { name: 'Demo User', email: 'demo@gmail.com', picture: null };
-  loginSuccess(userData);
-}
+function enterApp(userInfo, isNew) {
+  // Hide auth
+  const auth = document.getElementById('auth-screen');
+  auth.style.opacity = '0';
+  setTimeout(() => { auth.style.display = 'none'; }, 800);
 
-function loginSuccess(user) {
-  document.getElementById('auth-screen').classList.remove('visible');
-
-  // Update UI with user info
-  const initials = (user.name || 'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('user-name-display').textContent = user.name || 'Utilisateur';
-  document.getElementById('settings-name').textContent = user.name || 'Utilisateur';
-  document.getElementById('settings-email').textContent = user.email || '';
-  document.getElementById('drive-account').textContent = `Connecté en tant que ${user.email || 'Utilisateur'}`;
-
-  const setAvatar = (id) => {
-    const el = document.getElementById(id);
-    if (user.picture) {
-      el.innerHTML = `<img src="${user.picture}" alt="avatar"/>`;
-    } else {
-      el.textContent = initials;
-    }
-  };
-  setAvatar('user-avatar');
-  setAvatar('settings-avatar');
-
-  // Greeting by time
-  const h = new Date().getHours();
-  const greet = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
-  document.getElementById('greeting-text').textContent = `${greet}, ${(user.name||'').split(' ')[0] || 'ami·e'} ✨`;
+  // Update user UI
+  updateUserUI(userInfo);
 
   // Show app
   const app = document.getElementById('app');
-  app.classList.add('visible');
-  setSky(skyThemes['dashboard'], true);
-  populateDriveFiles();
-  populateHistory();
-  toast(`✅ Bienvenue ${user.name || ''} !`);
+  app.classList.add('app-visible');
+  document.getElementById('user-pill').style.display = 'flex';
+
+  // Init app data
+  if (!state.lastPeriod) {
+    document.getElementById('input-last-period').valueAsDate = new Date();
+  } else {
+    document.getElementById('input-last-period').value = state.lastPeriod;
+  }
+  document.getElementById('input-cycle-length').value = state.cycleLength;
+  document.getElementById('input-period-length').value = state.periodLength;
+  applyDarkMode();
+  updateToggleUI();
+  if (state.lastPeriod) { computeAll(); renderAll(); }
+  updateDriveStatus(state.gdriveConnected);
+  initCalViewMonth();
+  renderJournal();
+  loadPillsToday();
+
+  setSky('dawn');
+
+  if (isNew && state.gdriveToken) {
+    setTimeout(() => restoreGDrive(true), 1500);
+  }
+
+  saveLocal();
+  showToast(isNew ? `✅ Bienvenue ${userInfo.name?.split(' ')[0] || ''} !` : `🌸 Content de vous revoir !`);
+
+  // Auto-save
+  setInterval(() => {
+    if (state.autoSave && state.gdriveToken && state.gdriveConnected && state.cycles.length) {
+      syncGDrive(true);
+    }
+  }, 5 * 60 * 1000);
+}
+
+function updateUserUI(info) {
+  if (!info) return;
+  const initials = (info.name || 'L').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) || '🌸';
+  const setAv = (el) => {
+    if (info.picture) el.innerHTML = `<img src="${info.picture}" alt="">`;
+    else el.textContent = initials;
+  };
+  setAv(document.getElementById('user-avatar-header'));
+  setAv(document.getElementById('settings-avatar'));
+  document.getElementById('user-name-header').textContent = info.name?.split(' ')[0] || 'Compte';
+  document.getElementById('settings-user-name').textContent = info.name || '—';
+  document.getElementById('settings-user-email').textContent = info.email || '—';
 }
 
 function signOut() {
-  userData = null;
-  accessToken = null;
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('auth-screen').classList.add('visible');
-  setSky('sky-dawn', true);
-  toast('👋 Déconnecté');
+  if (!confirm('Se déconnecter de Luna ?')) return;
+  state.gdriveToken = null; state.gdriveConnected = false; state.userInfo = null;
+  saveLocal();
+  document.getElementById('app').classList.remove('app-visible');
+  document.getElementById('user-pill').style.display = 'none';
+  const auth = document.getElementById('auth-screen');
+  auth.style.display = 'flex';
+  auth.style.opacity = '0';
+  setTimeout(() => { auth.classList.add('auth-visible'); }, 50);
+  // Reset Google btn
+  document.getElementById('btn-google-signin').innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continuer avec Google`;
+  document.getElementById('btn-google-signin').disabled = false;
+  setSky('dawn');
+  showToast('👋 À bientôt !');
 }
 
-// ─── NAVIGATION ───────────────────────────────────────────
-function navigateTo(page) {
-  if (page === currentPage) return;
+/* ═══════════════════════════════════════════════
+   SKY ENGINE
+═══════════════════════════════════════════════ */
+function setSky(layerName) {
+  // Fade all layers out, then fade target in
+  document.querySelectorAll('.sky-layer').forEach(l => l.classList.remove('sky-visible'));
+  const target = document.getElementById('sky-' + layerName);
+  if (target) target.classList.add('sky-visible');
 
-  const skyToggle = document.getElementById('sky-toggle');
-  const doSky = skyToggle ? skyToggle.classList.contains('on') : true;
+  const theme = Object.values(SKY_THEMES).find(t => t.layer === layerName) || SKY_THEMES.dashboard;
+  document.body.classList.toggle('sky-is-dark',   !!theme.dark);
+  document.body.classList.toggle('sky-is-bright', !!theme.bright);
+  document.body.classList.toggle('sky-is-day',    !!theme.day);
+  document.body.classList.toggle('sky-is-sunset', !!theme.sunset);
+}
 
-  if (doSky) {
-    // Sky flash transition
-    const overlay = document.getElementById('sky-transition');
-    overlay.style.background = getComputedStyle(document.body)
-      .getPropertyValue('--sky-' + (skyThemes[page]||'day').replace('sky-','')) || '';
-    overlay.classList.add('flash');
-    setTimeout(() => overlay.classList.remove('flash'), 400);
+function transitionSky(page) {
+  const theme = SKY_THEMES[page] || SKY_THEMES.dashboard;
+  const wipe = document.getElementById('sky-wipe');
+
+  // Set wipe color to destination sky
+  const skyEl = document.getElementById('sky-' + theme.layer);
+  if (skyEl) {
+    const cs = window.getComputedStyle(skyEl);
+    wipe.style.background = cs.background || cs.backgroundImage || 'rgba(0,0,0,.3)';
   }
 
-  // Page transition
-  const old = document.getElementById('page-' + currentPage);
-  const next = document.getElementById('page-' + page);
-
-  if (old) {
-    old.classList.remove('active');
-    old.classList.add('exit');
-    setTimeout(() => old.classList.remove('exit'), 600);
-  }
-
+  // Flash wipe
+  wipe.classList.add('wipe-on');
   setTimeout(() => {
-    if (next) next.classList.add('active');
-  }, doSky ? 200 : 0);
+    setSky(theme.layer);
+    updateOrbPalette(page);
+    wipe.classList.remove('wipe-on');
+  }, 350);
+}
 
-  // Nav tabs
-  document.querySelectorAll('.nav-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.page === page);
+function updateOrbPalette(page) {
+  const palette = ORB_PALETTES[page] || ORB_PALETTES.dashboard;
+  const orbs = ['orb1','orb2','orb3'];
+  orbs.forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (el && palette[i]) {
+      const [c1,c2] = palette[i].split(',');
+      el.style.background = `radial-gradient(circle,${c1},${c2})`;
+    }
   });
+}
 
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════ */
+function navigate(page) {
+  if (page === currentPage) return;
   currentPage = page;
 
-  if (doSky) {
-    setTimeout(() => setSky(skyThemes[page]), 100);
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+
+  // Animated sky transition
+  transitionSky(page);
+
+  if (page === 'insights') renderInsights();
+  if (page === 'journal')  renderJournal();
+}
+
+/* ═══════════════════════════════════════════════
+   LOCAL STORAGE
+═══════════════════════════════════════════════ */
+function loadLocal() {
+  try {
+    const s = JSON.parse(localStorage.getItem('luna_v3') || '{}');
+    state = {...state, ...s};
+    if (state.cycles) {
+      state.cycles = state.cycles.map(c => ({
+        ...c,
+        periodStart: c.periodStart ? new Date(c.periodStart) : null,
+        periodEnd:   c.periodEnd   ? new Date(c.periodEnd)   : null,
+        ovulation:   c.ovulation   ? new Date(c.ovulation)   : null,
+        fStart:      c.fStart      ? new Date(c.fStart)      : null,
+        fEnd:        c.fEnd        ? new Date(c.fEnd)        : null,
+        nextPeriod:  c.nextPeriod  ? new Date(c.nextPeriod)  : null
+      }));
+    }
+  } catch(e) {}
+}
+function saveLocal() { localStorage.setItem('luna_v3', JSON.stringify(state)); }
+
+/* ═══════════════════════════════════════════════
+   DATE HELPERS
+═══════════════════════════════════════════════ */
+const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r; };
+const fmtDate = d => d ? d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '—';
+const fmtDateFull = d => d ? d.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}) : '—';
+const fmtISO = d => d instanceof Date ? d.toISOString().slice(0,10) : (d ? new Date(d).toISOString().slice(0,10) : '');
+const diffDays = (a,b) => Math.round((b-a)/86400000);
+const today = () => new Date(new Date().toDateString());
+
+/* ═══════════════════════════════════════════════
+   COMPUTE CYCLES
+═══════════════════════════════════════════════ */
+function computeAll() {
+  if (!state.lastPeriod) return;
+  const start = new Date(state.lastPeriod);
+  const endYear = new Date(new Date().getFullYear(), 11, 31);
+  const cl = +state.cycleLength || 28, pl = +state.periodLength || 5;
+  const ovDay = cl - 14, fStart = ovDay - 5, fEnd = ovDay + 1;
+  state.cycles = [];
+  let cur = new Date(start), idx = 1;
+  while (cur <= endYear) {
+    state.cycles.push({
+      idx, periodStart: new Date(cur), periodEnd: addDays(cur, pl-1),
+      ovulation: addDays(cur, ovDay-1), fStart: addDays(cur, fStart-1),
+      fEnd: addDays(cur, fEnd-1), nextPeriod: addDays(cur, cl)
+    });
+    cur = addDays(cur, cl); idx++;
+  }
+  saveLocal();
+}
+
+function renderAll() { renderDashboard(); renderCalendar(); renderTable(); renderHistoryChart(); }
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════ */
+function renderDashboard() {
+  if (!state.cycles.length) return;
+  const now = today(), cl = +state.cycleLength;
+  let cur = null;
+  for (const c of state.cycles) {
+    if (now >= c.periodStart && now < c.nextPeriod) { cur = c; break; }
+  }
+  let phaseName = '—', phaseDesc = '—', cycleDay = '—';
+  let fertilityScore = 0, fertilityLabel = 'Faible';
+  if (cur) {
+    const dayInCycle = diffDays(cur.periodStart, now) + 1;
+    cycleDay = dayInCycle;
+    const pl = +state.periodLength, ovD = cl-14, fS = ovD-5, fE = ovD+1;
+    if (now >= cur.periodStart && now <= cur.periodEnd) {
+      phaseName = 'Menstruation'; phaseDesc = 'Phase de règles. Reposez-vous et hydratez-vous bien.';
+      fertilityScore = 5; fertilityLabel = 'Très faible';
+    } else if (fmtISO(now) === fmtISO(cur.ovulation)) {
+      phaseName = 'Ovulation 🥚'; phaseDesc = 'Jour J — pic de fertilité ! La probabilité de conception est maximale.';
+      fertilityScore = 98; fertilityLabel = 'Maximale 🔥';
+    } else if (now >= cur.fStart && now <= cur.fEnd) {
+      phaseName = 'Fenêtre fertile 🌿'; phaseDesc = 'Haute fertilité. Ovulation imminente, corps en pleine énergie.';
+      fertilityScore = 75; fertilityLabel = 'Élevée 🌿';
+    } else if (now < cur.fStart) {
+      phaseName = 'Phase folliculaire'; phaseDesc = 'Énergie en hausse, humeur positive. Le corps se prépare.';
+      fertilityScore = 15; fertilityLabel = 'Faible';
+    } else {
+      phaseName = 'Phase lutéale'; phaseDesc = 'Phase post-ovulatoire. Prenez soin de vous.';
+      fertilityScore = 20; fertilityLabel = 'Faible';
+    }
+    document.getElementById('hero-day-num').textContent = dayInCycle;
+    document.getElementById('bar-period').style.width    = (pl/cl*100)+'%';
+    document.getElementById('bar-follicular').style.width= ((fS-pl)/cl*100)+'%';
+    document.getElementById('bar-fertile-seg').style.width= ((fE-fS)/cl*100)+'%';
+    document.getElementById('bar-ov').style.width        = (1/cl*100)+'%';
+    document.getElementById('bar-luteal').style.width    = ((cl-fE)/cl*100)+'%';
+    document.getElementById('progress-info').textContent = `Jour ${dayInCycle} sur ${cl} • ${cl - dayInCycle} jours restants`;
+  }
+  document.getElementById('hero-phase-name').textContent = phaseName;
+  document.getElementById('hero-phase-desc').textContent = phaseDesc;
+  document.getElementById('stat-cycle-day').textContent  = cycleDay !== '—' ? 'J' + cycleDay : '—';
+  document.getElementById('fertility-score').textContent = fertilityScore;
+  document.getElementById('fertility-fill').style.width  = fertilityScore + '%';
+  document.getElementById('fertility-label').textContent = fertilityLabel;
+  const np = cur ? cur.nextPeriod : state.cycles[0]?.periodStart;
+  if (np) {
+    const diff = diffDays(now, np);
+    document.getElementById('stat-next-period').textContent = diff <= 0 ? 'Aujourd\'hui' : diff + ' j';
+    if (diff >= 0 && diff <= 5) {
+      document.getElementById('hero-countdown').style.display = 'inline-flex';
+      document.getElementById('hero-countdown-text').textContent = `Règles dans ${diff} jour${diff>1?'s':''}`;
+    }
+  }
+  if (cur) {
+    const fd = diffDays(now, cur.fStart);
+    document.getElementById('stat-fertile').textContent = fd <= 0 ? 'En cours' : fd + ' j';
+    const od = diffDays(now, cur.ovulation);
+    document.getElementById('stat-ovulation').textContent = od === 0 ? 'Aujourd\'hui !' : (od < 0 ? 'Passé' : od + ' j');
+  }
+  const todayKey = fmtISO(today());
+  const entry = state.journal[todayKey];
+  if (entry && entry.mood) {
+    document.querySelectorAll('#quick-mood-grid .mood-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.mood === entry.mood);
+    });
   }
 }
 
-document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => navigateTo(tab.dataset.page));
-});
-
-// ─── SKY ENGINE ───────────────────────────────────────────
-const skyGradients = {
-  'sky-dawn':   'linear-gradient(180deg,#0a0a1a 0%,#1a0a2e 20%,#6b2d6b 50%,#e8703a 75%,#f4c97a 100%)',
-  'sky-day':    'linear-gradient(180deg,#0066cc 0%,#1a8fe3 40%,#74c6f5 70%,#e8f4fd 100%)',
-  'sky-golden': 'linear-gradient(180deg,#1a3a6b 0%,#2d5fa8 25%,#e8883a 60%,#f4c147 80%,#fdeea0 100%)',
-  'sky-dusk':   'linear-gradient(180deg,#0d0d2b 0%,#1a1060 30%,#7b2d8b 60%,#c94f4f 85%,#e8903a 100%)',
-  'sky-night':  'linear-gradient(180deg,#02020f 0%,#0a0a2e 40%,#0d1a4a 70%,#12204d 100%)',
-};
-
-function setSky(theme, immediate = false) {
-  const bg = document.getElementById('sky-bg');
-  bg.style.background = skyGradients[theme] || skyGradients['sky-day'];
-
-  // Body class for conditional elements
-  document.body.className = '';
-  document.body.classList.add(theme);
+/* ═══════════════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════════════ */
+let calView = new Date();
+function initCalViewMonth() { calView = new Date(); renderCalendar(); }
+function buildDayMap() {
+  const map = {};
+  state.cycles.forEach(c => {
+    for (let d = new Date(c.periodStart); d <= c.periodEnd; d = addDays(d,1))
+      map[fmtISO(d)] = {type:'period', cycle:c};
+    for (let d = new Date(c.fStart); d <= c.fEnd; d = addDays(d,1))
+      if (!map[fmtISO(d)]) map[fmtISO(d)] = {type:'fertile', cycle:c};
+    map[fmtISO(c.ovulation)] = {type:'ovulation', cycle:c};
+  });
+  return map;
+}
+function renderCalendar() {
+  const y = calView.getFullYear(), m = calView.getMonth();
+  document.getElementById('cal-month-title').textContent = MONTHS_FR[m] + ' ' + y;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  DAYS_FR.forEach(d => { const el=document.createElement('div');el.className='cal-dow';el.textContent=d;grid.appendChild(el); });
+  const first = new Date(y,m,1).getDay(), days = new Date(y,m+1,0).getDate();
+  const map = buildDayMap(), todayStr = fmtISO(today());
+  for (let i=0;i<first;i++){const el=document.createElement('div');el.className='cal-day empty';grid.appendChild(el);}
+  for (let d=1;d<=days;d++){
+    const dt = new Date(y,m,d), key = fmtISO(dt), info = map[key];
+    const el = document.createElement('div');
+    let cls = 'cal-day' + (info ? ' '+info.type : '') + (key===todayStr ? ' today-ring' : '');
+    if (state.calNotes && state.calNotes[key]) cls += ' has-note';
+    el.className = cls; el.textContent = d;
+    el.addEventListener('click', () => showDayDetail(dt, info, key));
+    grid.appendChild(el);
+  }
+}
+function showDayDetail(dt, info, key) {
+  state.currentCalDate = key;
+  document.getElementById('cal-detail-title').textContent = fmtDateFull(dt);
+  if (!info) document.getElementById('cal-detail-body').textContent = 'Aucun événement particulier.';
+  else if (info.type==='period')    document.getElementById('cal-detail-body').innerHTML = '🩸 <strong>Jour de règles</strong> — Cycle #'+info.cycle.idx;
+  else if (info.type==='ovulation') document.getElementById('cal-detail-body').innerHTML = '🥚 <strong>Jour J — Ovulation</strong> — Fertilité maximale. Cycle #'+info.cycle.idx;
+  else if (info.type==='fertile')   document.getElementById('cal-detail-body').innerHTML = '🌿 <strong>Fenêtre fertile</strong> — Cycle #'+info.cycle.idx;
+  document.getElementById('cal-note-area').value = (state.calNotes && state.calNotes[key]) || '';
+  document.getElementById('cal-day-detail').style.display = 'block';
+}
+function saveCalNote() {
+  if (!state.currentCalDate) return;
+  if (!state.calNotes) state.calNotes = {};
+  state.calNotes[state.currentCalDate] = document.getElementById('cal-note-area').value;
+  saveLocal(); showToast('📝 Note enregistrée !'); renderCalendar();
+}
+function changeMonth(n) {
+  calView.setMonth(calView.getMonth()+n);
+  renderCalendar();
+  document.getElementById('cal-day-detail').style.display='none';
 }
 
-// ─── DRIVE FILES ──────────────────────────────────────────
-const demoFiles = [
-  { name: 'Rapport_Q3.pdf', icon: '📄', type: 'PDF' },
-  { name: 'Présentation.pptx', icon: '📊', type: 'PPTX' },
-  { name: 'Contrat_2024.docx', icon: '📝', type: 'DOCX' },
-  { name: 'Photo_event.jpg', icon: '🖼️', type: 'JPG' },
-  { name: 'Budget.xlsx', icon: '📈', type: 'XLSX' },
-  { name: 'Manuel_utilisateur.pdf', icon: '📖', type: 'PDF' },
-  { name: 'Logo_HD.png', icon: '🎨', type: 'PNG' },
-  { name: 'Notes_réunion.docx', icon: '📋', type: 'DOCX' },
-];
-
-function populateDriveFiles(files) {
-  const grid = document.getElementById('drive-grid');
-  const list = files || demoFiles;
-  grid.innerHTML = list.map(f => `
-    <div class="drive-file" onclick="printFromDrive('${f.name}')">
-      <span class="drive-file-icon">${f.icon}</span>
-      <div class="drive-file-name">${f.name}</div>
-    </div>
-  `).join('');
+/* ═══════════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════════ */
+let tableData = [];
+function renderTable() {
+  if (!state.cycles.length) return;
+  const now = today();
+  tableData = state.cycles.map(c => {
+    const isCurrent = now >= c.periodStart && now < c.nextPeriod;
+    const isPast    = c.nextPeriod < now;
+    let phase = isPast
+      ? '<span class="badge" style="background:rgba(0,0,0,.05);color:#999">Passé</span>'
+      : isCurrent
+        ? (now<=c.periodEnd ? '<span class="badge badge-period">🩸 Règles</span>'
+          : now>=c.fStart&&now<=c.fEnd ? '<span class="badge badge-fertile">🌿 Fertile</span>'
+          : now<c.fStart ? '<span class="badge badge-follicular">💙 Folliculaire</span>'
+          : '<span class="badge badge-luteal">💜 Lutéale</span>')
+        : '<span class="badge badge-follicular">À venir</span>';
+    return { idx:c.idx, periodStart:fmtDate(c.periodStart), periodEnd:fmtDate(c.periodEnd),
+      fStart:fmtDate(c.fStart), ovulation:fmtDate(c.ovulation), fEnd:fmtDate(c.fEnd), phase, isCurrent };
+  });
+  renderTableRows(tableData);
+}
+function renderTableRows(data) {
+  document.getElementById('timeline-body').innerHTML = data.map(c =>
+    `<tr style="${c.isCurrent?'background:rgba(255,107,157,.06);font-weight:500':''}">
+      <td><strong>#${c.idx}</strong></td><td>${c.periodStart}</td><td>${c.periodEnd}</td>
+      <td>${c.fStart}</td><td style="font-weight:700;color:#f97316">${c.ovulation}</td>
+      <td>${c.fEnd}</td><td>${c.phase}</td></tr>`).join('');
+}
+function filterTable() {
+  const q = document.getElementById('table-search').value.toLowerCase();
+  if (!q) { renderTableRows(tableData); return; }
+  renderTableRows(tableData.filter(c =>
+    String(c.idx).includes(q)||c.periodStart.toLowerCase().includes(q)||
+    c.ovulation.toLowerCase().includes(q)||c.fStart.toLowerCase().includes(q)));
+}
+function printTable() {
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  window.print();
 }
 
-function loadDriveFiles() {
-  if (!accessToken) { toast('⚠️ Mode démo actif'); return; }
-  toast('🔄 Chargement de Drive…');
-  fetch('https://www.googleapis.com/drive/v3/files?pageSize=20&fields=files(id,name,mimeType)', {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  })
-  .then(r => r.json())
-  .then(data => {
-    const files = (data.files || []).map(f => ({
-      name: f.name,
-      icon: mimeIcon(f.mimeType),
-      id: f.id
-    }));
-    populateDriveFiles(files);
-    toast(`☁️ ${files.length} fichiers chargés`);
-  })
-  .catch(() => toast('❌ Erreur lors du chargement'));
-}
-
-function mimeIcon(mime) {
-  if (!mime) return '📄';
-  if (mime.includes('pdf')) return '📄';
-  if (mime.includes('presentation') || mime.includes('powerpoint')) return '📊';
-  if (mime.includes('spreadsheet') || mime.includes('excel')) return '📈';
-  if (mime.includes('document') || mime.includes('word')) return '📝';
-  if (mime.includes('image')) return '🖼️';
-  if (mime.includes('folder')) return '📁';
-  return '📄';
-}
-
-function printFromDrive(name) {
-  navigateTo('print');
-  setTimeout(() => {
-    document.querySelector('#upload-zone .upload-title').textContent = name;
-    document.querySelector('#upload-zone .upload-hint').textContent = 'Fichier sélectionné depuis Drive ✓';
-    document.getElementById('upload-zone').style.borderColor = 'var(--accent)';
-    toast(`📎 "${name}" sélectionné`);
-  }, 400);
-}
-
-// ─── HISTORY ──────────────────────────────────────────────
-const historyData = [
-  { name: 'Rapport_Q3.pdf', pages: 12, date: 'Aujourd\'hui 14:23', status: 'sent' },
-  { name: 'Contrat_v2.docx', pages: 4, date: 'Aujourd\'hui 09:10', status: 'ready' },
-  { name: 'Affiche_event.png', pages: 1, date: 'Hier 17:45', status: 'pending' },
-  { name: 'Budget_2024.xlsx', pages: 8, date: '18 avr. 11:00', status: 'sent' },
-  { name: 'Manuel.pdf', pages: 34, date: '17 avr. 15:30', status: 'sent' },
-];
-
-function populateHistory() {
-  const list = document.getElementById('history-list');
-  const badgeMap = { sent: 'badge-sent', ready: 'badge-ready', pending: 'badge-pending' };
-  const labelMap = { sent: 'Envoyé', ready: 'Prêt', pending: 'En attente' };
-  list.innerHTML = historyData.map(h => `
-    <div class="file-item">
-      <div class="file-icon">📄</div>
-      <div class="file-info">
-        <div class="file-name">${h.name}</div>
-        <div class="file-meta">${h.date} · ${h.pages} page${h.pages>1?'s':''}</div>
+/* ═══════════════════════════════════════════════
+   HISTORY CHART
+═══════════════════════════════════════════════ */
+function renderHistoryChart() {
+  const container = document.getElementById('history-chart');
+  if (!container || !state.cycles.length) return;
+  const recent = state.cycles.slice(0, 12);
+  const maxH = 70;
+  container.innerHTML = recent.map(c => {
+    const hP = Math.round((+state.periodLength / +state.cycleLength) * maxH);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+      <div class="history-bar" style="height:${hP}px;background:linear-gradient(180deg,#ff6b9d,#e0407a);width:100%">
+        <div class="history-bar-val">${state.periodLength}j</div>
       </div>
-      <span class="badge ${badgeMap[h.status]}">${labelMap[h.status]}</span>
-    </div>
-  `).join('');
+      <div class="history-bar-label">#${c.idx}</div></div>`;
+  }).join('');
 }
 
-// ─── PRINT ────────────────────────────────────────────────
-function simulateUpload() {
-  const names = ['Facture_mai.pdf','Rapport_analyse.docx','Photo_HD.jpg','Présentation.pptx'];
-  const name = names[Math.floor(Math.random()*names.length)];
-  document.querySelector('#upload-zone .upload-title').textContent = name;
-  document.querySelector('#upload-zone .upload-hint').textContent = 'Fichier prêt ✓';
-  document.getElementById('upload-zone').style.borderColor = 'var(--accent)';
-  toast(`📎 "${name}" chargé`);
+/* ═══════════════════════════════════════════════
+   INSIGHTS
+═══════════════════════════════════════════════ */
+function renderInsights() {
+  const container = document.getElementById('insights-container');
+  const now = today(), cl = +state.cycleLength, pl = +state.periodLength;
+  if (!state.cycles.length) {
+    container.innerHTML = '<div class="insight-card info"><div class="insight-body">Configurez votre cycle dans les Réglages pour voir vos insights personnalisés.</div></div>';
+    renderCycleStats(); return;
+  }
+  let cur = null;
+  for (const c of state.cycles) { if (now >= c.periodStart && now < c.nextPeriod) { cur = c; break; } }
+  let insights = [];
+  if (cur) {
+    const daysLeft = diffDays(now, cur.nextPeriod), dayIn = diffDays(cur.periodStart, now) + 1;
+    const ovDays = diffDays(now, cur.ovulation);
+    if (daysLeft <= 3 && daysLeft >= 0) insights.push({type:'warning',icon:'🩸',title:'Règles imminentes',body:`Vos prochaines règles arrivent dans ${daysLeft} jour${daysLeft>1?'s':''}. Préparez votre trousse de confort !`});
+    if (ovDays === 1) insights.push({type:'tip',icon:'🥚',title:'Ovulation demain !',body:'Demain est votre Jour J. Si vous essayez de concevoir, c\'est le moment clé.'});
+    if (fmtISO(now) === fmtISO(cur.ovulation)) insights.push({type:'warning',icon:'🔥',title:'Jour d\'ovulation aujourd\'hui',body:'Fertilité maximale ! La probabilité de conception est la plus élevée.'});
+    if (now >= cur.fStart && now <= cur.fEnd) insights.push({type:'tip',icon:'🌿',title:'Vous êtes dans votre fenêtre fertile',body:'Les 5-6 jours précédant l\'ovulation sont fertiles.'});
+    if (dayIn >= 1 && dayIn <= pl) insights.push({type:'info',icon:'💆',title:'Conseil bien-être — Règles',body:'Pendant vos règles, privilégiez le repos, les aliments riches en fer et l\'hydratation.'});
+    const ovD = cl - 14;
+    if (dayIn > pl && dayIn < ovD - 5) insights.push({type:'tip',icon:'⚡',title:'Phase folliculaire — Énergie maximale',body:'Idéale pour l\'exercice intense, les projets créatifs et les nouvelles initiatives.'});
+    if (dayIn > ovD + 1) insights.push({type:'info',icon:'🌙',title:'Phase lutéale — Prenez soin de vous',body:'La progestérone monte. Priorisez le sommeil et la détente.'});
+  }
+  if (cl < 24 || cl > 35) insights.push({type:'warning',icon:'⚠️',title:'Cycle atypique',body:`Votre cycle de ${cl} jours sort des normes (25-35j). Il pourrait être utile de consulter.`});
+  else insights.push({type:'tip',icon:'✅',title:'Cycle régulier',body:`Votre cycle de ${cl} jours est dans la norme.`});
+  insights.push({type:'info',icon:'💧',title:'Rappel hydratation',body:'Boire 1.5–2L d\'eau par jour peut réduire les crampes et la fatigue liées au cycle.'});
+  container.innerHTML = insights.map(i => `<div class="insight-card ${i.type}"><div class="insight-icon">${i.icon}</div><div class="insight-title">${i.title}</div><div class="insight-body">${i.body}</div></div>`).join('');
+  renderCycleStats();
+}
+function renderCycleStats() {
+  const el = document.getElementById('cycle-stats-body');
+  if (!state.cycles.length) { el.textContent = '—'; return; }
+  const now = today(), pastCycles = state.cycles.filter(c => c.nextPeriod < now).length;
+  el.innerHTML = `🔄 Durée du cycle : <strong>${state.cycleLength} jours</strong><br>🩸 Durée des règles : <strong>${state.periodLength} jours</strong><br>📅 Cycles calculés : <strong>${state.cycles.length}</strong><br>✅ Cycles passés : <strong>${pastCycles}</strong><br>🔮 Cycles à venir : <strong>${state.cycles.length - pastCycles}</strong><br>📊 Jours fertiles / cycle : <strong>6 jours</strong>`;
 }
 
-function sendPrint() {
-  const title = document.querySelector('#upload-zone .upload-title').textContent;
-  if (title === 'Glissez votre fichier ici') {
-    toast('⚠️ Sélectionnez d\'abord un fichier');
+/* ═══════════════════════════════════════════════
+   JOURNAL
+═══════════════════════════════════════════════ */
+let journalMood = null, journalSymptoms = [];
+function setJournalMood(mood) {
+  journalMood = mood;
+  document.querySelectorAll('#journal-mood-grid .mood-btn').forEach(b => b.classList.toggle('selected', b.dataset.mood === mood));
+}
+function toggleSymptom(el, name) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) { if (!journalSymptoms.includes(name)) journalSymptoms.push(name); }
+  else journalSymptoms = journalSymptoms.filter(s => s !== name);
+}
+function saveJournalEntry() {
+  const key = fmtISO(today());
+  if (!state.journal) state.journal = {};
+  state.journal[key] = { mood:journalMood, symptoms:[...journalSymptoms], note:document.getElementById('journal-note').value, date:key };
+  saveLocal(); showToast('📓 Entrée enregistrée !');
+  if (state.autoSave && state.gdriveToken) syncGDrive(true);
+  renderJournal();
+}
+function renderJournal() {
+  const key = fmtISO(today()), entry = state.journal && state.journal[key];
+  if (entry) {
+    if (entry.mood) { journalMood = entry.mood; document.querySelectorAll('#journal-mood-grid .mood-btn').forEach(b => b.classList.toggle('selected', b.dataset.mood === entry.mood)); }
+    if (entry.note) document.getElementById('journal-note').value = entry.note;
+    if (entry.symptoms) {
+      journalSymptoms = entry.symptoms;
+      document.querySelectorAll('.symptom-chip').forEach(el => {
+        const m = el.getAttribute('onclick').match(/'([^']+)'\)/);
+        if (m) el.classList.toggle('selected', journalSymptoms.includes(m[1]));
+      });
+    }
+  }
+  const container = document.getElementById('recent-entries');
+  if (!state.journal || !Object.keys(state.journal).length) {
+    container.innerHTML = '<div style="font-size:.82rem;color:var(--muted);text-align:center;padding:12px">Aucune entrée pour le moment</div>';
     return;
   }
-  toast(`🖨️ "${title}" envoyé à l'imprimante !`);
-  setTimeout(() => toast('✅ Impression démarrée'), 1200);
-  historyData.unshift({ name: title, pages: Math.floor(Math.random()*20)+1, date: 'À l\'instant', status: 'pending' });
-  populateHistory();
+  const sorted = Object.entries(state.journal).sort((a,b) => b[0].localeCompare(a[0])).slice(0,5);
+  container.innerHTML = sorted.map(([date, entry]) => `
+    <div style="padding:10px 0;border-bottom:1px solid rgba(255,107,157,.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:.8rem;font-weight:600">${new Date(date+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</span>
+        <span style="font-size:1.2rem">${entry.mood||'—'}</span>
+      </div>
+      ${entry.symptoms?.length ? `<div style="font-size:.73rem;color:var(--muted);margin-bottom:4px">${entry.symptoms.join(' • ')}</div>` : ''}
+      ${entry.note ? `<div style="font-size:.78rem;color:var(--text);font-style:italic">"${entry.note.slice(0,80)}${entry.note.length>80?'…':''}"</div>` : ''}
+    </div>`).join('');
 }
 
-// ─── TOAST ────────────────────────────────────────────────
-function toast(msg, duration = 3000) {
-  const container = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  container.appendChild(t);
-  setTimeout(() => {
-    t.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    t.style.opacity = '0';
-    t.style.transform = 'translateX(20px)';
-    setTimeout(() => t.remove(), 400);
-  }, duration);
+/* ═══════════════════════════════════════════════
+   MOOD QUICK LOG
+═══════════════════════════════════════════════ */
+function quickMood(mood) {
+  const key = fmtISO(today());
+  if (!state.journal) state.journal = {};
+  if (!state.journal[key]) state.journal[key] = {};
+  state.journal[key].mood = mood; saveLocal();
+  document.querySelectorAll('#quick-mood-grid .mood-btn').forEach(b => b.classList.toggle('selected', b.dataset.mood === mood));
+  document.getElementById('quick-mood-saved').style.display = 'block';
+  setTimeout(() => document.getElementById('quick-mood-saved').style.display = 'none', 2000);
+}
+
+/* ═══════════════════════════════════════════════
+   PILL TRACKER
+═══════════════════════════════════════════════ */
+function loadPillsToday() {
+  const key = fmtISO(today()), pills = (state.pillsToday && state.pillsToday[key]) || {};
+  ['pill-folate','pill-vitd','pill-mag'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn && pills[id]) { btn.classList.add('done'); btn.textContent = '✓'; }
+  });
+}
+function togglePill(id) {
+  const key = fmtISO(today());
+  if (!state.pillsToday) state.pillsToday = {};
+  if (!state.pillsToday[key]) state.pillsToday[key] = {};
+  state.pillsToday[key][id] = !state.pillsToday[key][id];
+  const btn = document.getElementById(id);
+  btn.classList.toggle('done', state.pillsToday[key][id]);
+  btn.textContent = state.pillsToday[key][id] ? '✓' : '○';
+  saveLocal();
+}
+
+/* ═══════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════ */
+function saveSettings() {
+  const lp = document.getElementById('input-last-period').value;
+  const cl = +document.getElementById('input-cycle-length').value;
+  const pl = +document.getElementById('input-period-length').value;
+  if (!lp) { showToast('⚠️ Entrez la date des dernières règles'); return; }
+  if (cl<21||cl>45) { showToast('⚠️ Cycle : 21–45 jours'); return; }
+  if (pl<2||pl>10)  { showToast('⚠️ Règles : 2–10 jours'); return; }
+  state.lastPeriod = lp; state.cycleLength = cl; state.periodLength = pl;
+  computeAll(); renderAll();
+  showToast('✅ Cycle calculé jusqu\'au 31 déc !');
+  navigate('dashboard');
+  if (state.autoSave && state.gdriveToken) syncGDrive(true);
+}
+function toggleDark() { state.darkMode = !state.darkMode; applyDarkMode(); saveLocal(); }
+function applyDarkMode() {
+  document.body.classList.toggle('dark', !!state.darkMode);
+  document.getElementById('toggle-dark').classList.toggle('on', !!state.darkMode);
+}
+function toggleNotif() {
+  state.notifEnabled = !state.notifEnabled;
+  document.getElementById('toggle-notif').classList.toggle('on', state.notifEnabled);
+  saveLocal();
+  showToast(state.notifEnabled ? '🔔 Notifications activées' : '🔕 Désactivées');
+}
+function toggleAutosave() {
+  state.autoSave = !state.autoSave;
+  document.getElementById('toggle-autosave').classList.toggle('on', state.autoSave);
+  saveLocal();
+}
+function updateToggleUI() {
+  document.getElementById('toggle-dark').classList.toggle('on', !!state.darkMode);
+  document.getElementById('toggle-notif').classList.toggle('on', state.notifEnabled !== false);
+  document.getElementById('toggle-autosave').classList.toggle('on', state.autoSave !== false);
+}
+function resetApp() {
+  if (!confirm('Supprimer toutes les données Luna ?')) return;
+  localStorage.removeItem('luna_v3'); location.reload();
+}
+
+/* ═══════════════════════════════════════════════
+   GOOGLE DRIVE
+═══════════════════════════════════════════════ */
+function buildPayload() {
+  return {
+    lastPeriod: state.lastPeriod, cycleLength: state.cycleLength,
+    periodLength: state.periodLength, updatedAt: new Date().toISOString(),
+    journal: state.journal || {}, calNotes: state.calNotes || {},
+    cycles: state.cycles.map(c => ({
+      idx: c.idx, periodStart: fmtISO(c.periodStart), periodEnd: fmtISO(c.periodEnd),
+      fertileStart: fmtISO(c.fStart), ovulation: fmtISO(c.ovulation),
+      fertileEnd: fmtISO(c.fEnd), nextPeriod: fmtISO(c.nextPeriod)
+    }))
+  };
+}
+
+async function syncGDrive(silent = false) {
+  if (!state.gdriveToken) { if (!silent) showToast('⚠️ Connectez Google Drive d\'abord'); return; }
+  if (!state.cycles.length) { if (!silent) showToast('⚠️ Calculez votre cycle d\'abord'); return; }
+  if (!silent) setBtnSpinning(true);
+  const payload = JSON.stringify(buildPayload(), null, 2);
+  const blob = new Blob([payload], {type:'application/json'});
+  try {
+    let fileId = state.gdriveFileId;
+    if (!fileId) {
+      const search = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${LUNA_FILENAME}'+and+trashed=false&fields=files(id,name)`, { headers:{Authorization:`Bearer ${state.gdriveToken}`} });
+      if (search.ok) { const d = await search.json(); if (d.files?.length) fileId = d.files[0].id; }
+    }
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify({name:LUNA_FILENAME,mimeType:'application/json'})], {type:'application/json'}));
+    form.append('file', blob);
+    const url = fileId
+      ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    const response = await fetch(url, { method: fileId ? 'PATCH' : 'POST', headers:{Authorization:`Bearer ${state.gdriveToken}`}, body:form });
+    if (!response.ok) { const err = await response.json(); throw new Error(err.error?.message||'Erreur Drive'); }
+    const result = await response.json();
+    state.gdriveFileId = result.id;
+    state.lastAutoSave = new Date().toISOString();
+    if (!state.backupHistory) state.backupHistory = [];
+    state.backupHistory.unshift({name:LUNA_FILENAME,fileId:result.id,date:new Date().toISOString(),cycles:state.cycles.length});
+    state.backupHistory = state.backupHistory.slice(0,20);
+    saveLocal(); setBtnSpinning(false);
+    const timeStr = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    if (!silent) showToast('✅ Sauvegardé sur Google Drive !');
+    updateDriveStatus(true, false, timeStr);
+  } catch(e) {
+    setBtnSpinning(false);
+    if (!silent) showToast('❌ Erreur Drive : ' + e.message);
+    if (e.message.includes('401')) { state.gdriveToken = null; updateDriveStatus(false, true); }
+  }
+}
+
+async function restoreGDrive(silent = false) {
+  if (!state.gdriveToken) { if (!silent) showToast('⚠️ Connectez Google Drive d\'abord'); return; }
+  if (!silent) { setBtnSpinning(true); showToast('📥 Restauration en cours…'); }
+  try {
+    let fileId = state.gdriveFileId;
+    if (!fileId) {
+      const search = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${LUNA_FILENAME}'+and+trashed=false&fields=files(id,name)`, { headers:{Authorization:`Bearer ${state.gdriveToken}`} });
+      if (search.ok) { const d = await search.json(); if (d.files?.length) fileId = d.files[0].id; }
+    }
+    if (!fileId) { setBtnSpinning(false); if (!silent) showToast('ℹ️ Aucune sauvegarde trouvée'); return; }
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers:{Authorization:`Bearer ${state.gdriveToken}`} });
+    if (!resp.ok) throw new Error('Fichier inaccessible');
+    const d = await resp.json();
+    state.lastPeriod = d.lastPeriod; state.cycleLength = d.cycleLength; state.periodLength = d.periodLength;
+    if (d.journal) state.journal = d.journal;
+    if (d.calNotes) state.calNotes = d.calNotes;
+    state.gdriveFileId = fileId;
+    document.getElementById('input-last-period').value = state.lastPeriod;
+    document.getElementById('input-cycle-length').value = state.cycleLength;
+    document.getElementById('input-period-length').value = state.periodLength;
+    computeAll(); renderAll(); saveLocal(); setBtnSpinning(false);
+    if (!silent) showToast('✅ Données restaurées depuis Google Drive !');
+    updateDriveStatus(true, false, new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    setBtnSpinning(false);
+    if (!silent) showToast('❌ Erreur restauration : ' + e.message);
+  }
+}
+
+async function quickSyncDrive() {
+  if (state.gdriveToken && state.gdriveConnected) await syncGDrive(false);
+  else { showToast('⚠️ Google Drive non connecté'); navigate('settings'); }
+}
+
+function updateDriveStatus(connected, error = false, time = null) {
+  const bar = document.getElementById('gdrive-status-card'), dot = document.getElementById('gdrive-dot'), txt = document.getElementById('gdrive-status-text');
+  const dash = document.getElementById('cloud-status-dash'), ddot = document.getElementById('cloud-dot-dash'), dtxt = document.getElementById('cloud-text-dash');
+  if (!bar) return;
+  if (error) {
+    bar.className='cloud-bar error';dot.className='cloud-dot dot-error';txt.textContent='❌ Erreur de connexion Google Drive';
+    dash.className='cloud-bar error';ddot.className='cloud-dot dot-error';dtxt.textContent='❌ Erreur Drive — Reconnectez-vous';
+  } else if (connected) {
+    bar.className='cloud-bar ok';dot.className='cloud-dot dot-ok';txt.textContent=time?`✅ Synchronisé à ${time}`:'✅ Connecté à Google Drive';
+    dash.className='cloud-bar ok';ddot.className='cloud-dot dot-ok';dtxt.textContent=time?`☁️ Drive — Dernière sync : ${time}`:'☁️ Google Drive connecté';
+  } else {
+    bar.className='cloud-bar warn';dot.className='cloud-dot dot-warn';txt.textContent='Non connecté à Google Drive';
+    dash.className='cloud-bar warn';ddot.className='cloud-dot dot-warn';dtxt.textContent='☁️ Google Drive non connecté — Appuyez pour configurer';
+  }
+}
+
+function showBackupList() {
+  const html = !state.backupHistory?.length
+    ? '<div style="text-align:center;color:var(--muted);font-size:.85rem;padding:20px">Aucune sauvegarde.</div>'
+    : state.backupHistory.map((b,i) => `<div class="backup-item"><div class="backup-info"><div class="backup-name">💾 ${b.name}</div><div class="backup-date">${new Date(b.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})} • ${b.cycles} cycles</div></div><div class="backup-actions"><button class="backup-btn backup-restore" onclick="closeModal();restoreGDrive(false)">↩ Restaurer</button></div></div>`).join('');
+  openModal('📋 Sauvegardes Drive', html);
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════ */
+function openModal(title, body) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════
+   EXPORT / IMPORT
+═══════════════════════════════════════════════ */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(buildPayload(),null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href=url; a.download='luna-cycle-'+fmtISO(new Date())+'.json'; a.click(); URL.revokeObjectURL(url);
+  showToast('💾 Export JSON téléchargé !');
+}
+function importJSON(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      state.lastPeriod = d.lastPeriod; state.cycleLength = d.cycleLength; state.periodLength = d.periodLength;
+      if (d.journal) state.journal = d.journal;
+      if (d.calNotes) state.calNotes = d.calNotes;
+      document.getElementById('input-last-period').value = state.lastPeriod;
+      document.getElementById('input-cycle-length').value = state.cycleLength;
+      document.getElementById('input-period-length').value = state.periodLength;
+      computeAll(); renderAll(); saveLocal(); showToast('✅ Données importées !');
+    } catch(err) { showToast('❌ Fichier invalide'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+function setBtnSpinning(on) {
+  const btn = document.getElementById('sync-btn');
+  if (on) btn.classList.add('spinning'); else btn.classList.remove('spinning');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 </script>
 </body>
