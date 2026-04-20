@@ -566,18 +566,32 @@ body.dark .mood-btn{background:rgba(255,107,157,.1)}
 /* Print */
 @media print {
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
-  body{background:#fff !important;color:#000 !important}
+  body{background:#fff !important;color:#222 !important;font-family:'DM Sans',sans-serif !important}
   .bg-orbs,nav,header .header-right,.toast,#modal-overlay,#sky-canvas,#splash,#auth-screen{display:none !important}
   #page-settings,#page-calendar,#page-insights,#page-journal,#page-dashboard{display:none !important}
   #page-table{display:block !important;padding:0 !important}
   header{padding:16px 0 8px !important}
   .logo{-webkit-text-fill-color:#e0407a !important;color:#e0407a !important}
-  .timeline-table-wrap{overflow:visible !important;box-shadow:none !important;border:1px solid #ddd !important;border-radius:8px !important}
-  table.timeline{font-size:.82rem !important}
+  .timeline-table-wrap{overflow:visible !important;box-shadow:none !important;border:2px solid #e0407a !important;border-radius:10px !important;margin-bottom:24px !important}
+  table.timeline{font-size:.82rem !important;width:100% !important}
   table.timeline thead tr{background:#e0407a !important;color:#fff !important}
-  .btn-sm{display:none !important}
+  table.timeline th{padding:10px 12px !important;font-weight:600;letter-spacing:.5px}
+  table.timeline td{padding:8px 12px !important;border-bottom:1px solid #f3e3ee !important}
+  table.timeline tr:nth-child(even) td{background:#fff5f9 !important}
+  table.timeline tr[style*="background"]{background:#ffe8f2 !important}
+  .badge{border-radius:8px;padding:2px 8px;font-size:.72rem;font-weight:600;display:inline-block}
+  .badge-period{background:#ffd6e7 !important;color:#e0407a !important}
+  .badge-fertile{background:#d1fae5 !important;color:#065f46 !important}
+  .badge-follicular{background:#dbeafe !important;color:#1e40af !important}
+  .badge-luteal{background:#ede9fe !important;color:#5b21b6 !important}
+  .btn-sm,.search-wrap{display:none !important}
   #print-header{display:block !important}
+  #print-summary{display:block !important}
+  #print-insights{display:block !important}
   #app{padding:0 16px !important;max-width:100% !important;opacity:1 !important;pointer-events:all !important}
+  .card{box-shadow:none !important;border:1px solid #f0dce8 !important;margin-bottom:16px !important}
+  .history-chart{display:none !important}
+  @page{margin:20mm;size:A4}
 }
 #print-header{display:none}
 
@@ -781,8 +795,24 @@ body.dark .modal-sheet{background:#2a0a22}
   <!-- TABLE -->
   <div id="page-table" class="page">
     <div id="print-header" style="margin-bottom:16px">
-      <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0407a">Luna — Calendrier Cycle Féminin</div>
-      <div style="font-size:.8rem;color:#666;margin-top:4px">Généré le <span id="print-date"></span></div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.6rem">🌙</div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:#e0407a;line-height:1">Luna</div>
+          <div style="font-size:.75rem;letter-spacing:3px;text-transform:uppercase;color:#9b7ea4">Suivi de cycle féminin</div>
+        </div>
+      </div>
+      <div style="font-size:1.3rem;font-family:'Playfair Display',serif;font-weight:700;color:#2d1033;margin-bottom:4px">Calendrier du cycle menstruel</div>
+      <div style="font-size:.8rem;color:#9b7ea4;margin-bottom:2px">Généré le <span id="print-date"></span></div>
+      <div style="height:2px;background:linear-gradient(90deg,#ff6b9d,#c084fc,transparent);border-radius:2px;margin-top:12px"></div>
+    </div>
+    <div id="print-summary" style="display:none;margin-bottom:20px;padding:16px 20px;background:#fff5f9;border-left:4px solid #e0407a;border-radius:0 10px 10px 0">
+      <div style="font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:8px">📋 Résumé de votre cycle</div>
+      <div id="print-summary-body" style="font-size:.85rem;color:#4a1942;line-height:1.9"></div>
+    </div>
+    <div id="print-insights" style="display:none;margin-bottom:20px">
+      <div style="font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:10px">✨ Conseils &amp; points d'attention</div>
+      <div id="print-insights-body" style="font-size:.83rem;color:#4a1942;line-height:1.8"></div>
     </div>
     <div class="sec-header">
       <div class="timeline-title">Calendrier annuel</div>
@@ -981,6 +1011,7 @@ body.dark .modal-sheet{background:#2a0a22}
 const GDRIVE_CLIENT_ID = '296255887794-sh6pjr8fa7jh5r38r200ddjp683ok2se.apps.googleusercontent.com';
 const GDRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 const LUNA_FILENAME    = 'luna-cycle-data.json';
+const LUNA_FOLDER      = 'Cycle menstruel';
 const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const DAYS_FR   = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
@@ -1010,7 +1041,7 @@ const ORB_PALETTES = {
 ═══════════════════════════════════════════════ */
 let state = {
   lastPeriod: null, cycleLength: 28, periodLength: 5,
-  gdriveConnected: false, gdriveToken: null, gdriveFileId: null,
+  gdriveConnected: false, gdriveToken: null, gdriveFileId: null, gdriveFolderId: null,
   autoSave: true, darkMode: false, notifEnabled: true,
   cycles: [], journal: {}, calNotes: {}, pillsToday: {},
   lastAutoSave: null, backupHistory: [], currentCalDate: null,
@@ -1171,17 +1202,67 @@ function updateUserUI(info) {
 
 function signOut() {
   if (!confirm('Se déconnecter de Luna ?')) return;
-  state.gdriveToken = null; state.gdriveConnected = false; state.userInfo = null;
+
+  // Réinitialiser le state complet (conserver les préférences UI)
+  const darkMode = state.darkMode;
+  state = {
+    lastPeriod: null, cycleLength: 28, periodLength: 5,
+    gdriveConnected: false, gdriveToken: null, gdriveFileId: null,
+    gdriveFolderId: null,
+    autoSave: true, darkMode: darkMode, notifEnabled: true,
+    cycles: [], journal: {}, calNotes: {}, pillsToday: {},
+    lastAutoSave: null, backupHistory: [], currentCalDate: null,
+    userInfo: null
+  };
   saveLocal();
+  tokenClient = null;
+
+  // Réinitialiser la navigation
+  currentPage = 'dashboard';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-dashboard').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-dashboard').classList.add('active');
+
+  // Masquer l'app
   document.getElementById('app').classList.remove('app-visible');
   document.getElementById('user-pill').style.display = 'none';
+
+  // Réinitialiser les inputs settings
+  document.getElementById('input-last-period').value = '';
+  document.getElementById('input-cycle-length').value = 28;
+  document.getElementById('input-period-length').value = 5;
+
+  // Réinitialiser l'affichage dashboard
+  document.getElementById('hero-phase-name').textContent = '—';
+  document.getElementById('hero-phase-desc').textContent = 'Configurez votre cycle dans les paramètres.';
+  document.getElementById('hero-day-num').textContent = '—';
+  document.getElementById('hero-countdown').style.display = 'none';
+  document.getElementById('stat-next-period').textContent = '—';
+  document.getElementById('stat-fertile').textContent = '—';
+  document.getElementById('stat-ovulation').textContent = '—';
+  document.getElementById('stat-cycle-day').textContent = '—';
+  document.getElementById('fertility-score').textContent = '—';
+  document.getElementById('fertility-fill').style.width = '0%';
+  document.getElementById('fertility-label').textContent = '—';
+  document.getElementById('timeline-body').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Configurez votre cycle dans les paramètres</td></tr>';
+  document.getElementById('insights-container').innerHTML = '';
+  document.getElementById('history-chart').innerHTML = '';
+  document.getElementById('user-avatar-header').textContent = '🌸';
+  document.getElementById('user-name-header').textContent = 'Compte';
+  updateDriveStatus(false);
+
+  // Afficher l'écran de connexion
   const auth = document.getElementById('auth-screen');
   auth.style.display = 'flex';
   auth.style.opacity = '0';
-  setTimeout(() => { auth.classList.add('auth-visible'); }, 50);
-  // Reset Google btn
-  document.getElementById('btn-google-signin').innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continuer avec Google`;
+  auth.classList.remove('auth-visible');
+  setTimeout(() => { auth.classList.add('auth-visible'); }, 80);
+
+  // Réinitialiser le bouton Google
+  document.getElementById('btn-google-signin').innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continuer avec Google';
   document.getElementById('btn-google-signin').disabled = false;
+
   setSky('dawn');
   showToast('👋 À bientôt !');
 }
@@ -1366,9 +1447,14 @@ function renderDashboard() {
   }
   if (cur) {
     const fd = diffDays(now, cur.fStart);
-    document.getElementById('stat-fertile').textContent = fd <= 0 ? 'En cours' : fd + ' j';
+    const fdEnd = diffDays(now, cur.fEnd);
+    let fertileText;
+    if (now >= cur.fStart && now <= cur.fEnd) fertileText = 'En cours 🌿';
+    else if (fdEnd < 0) fertileText = 'Passée';
+    else fertileText = fd + ' j';
+    document.getElementById('stat-fertile').textContent = fertileText;
     const od = diffDays(now, cur.ovulation);
-    document.getElementById('stat-ovulation').textContent = od === 0 ? 'Aujourd\'hui !' : (od < 0 ? 'Passé' : od + ' j');
+    document.getElementById('stat-ovulation').textContent = od === 0 ? 'Aujourd\'hui !' : (od < 0 ? 'Passée' : od + ' j');
   }
   const todayKey = fmtISO(today());
   const entry = state.journal[todayKey];
@@ -1475,7 +1561,45 @@ function filterTable() {
 }
 function printTable() {
   document.getElementById('print-date').textContent = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  if (state.cycles.length) {
+    const now = today(), pastCycles = state.cycles.filter(c => c.nextPeriod < now).length;
+    const futureCycles = state.cycles.filter(c => c.periodStart > now).length;
+    let cur = state.cycles.find(c => now >= c.periodStart && now < c.nextPeriod);
+    const nextPeriod = cur ? cur.nextPeriod : state.cycles.find(c => c.periodStart > now)?.periodStart;
+    const daysToNext = nextPeriod ? diffDays(now, nextPeriod) : null;
+    const summaryEl = document.getElementById('print-summary-body');
+    const ovDay = +state.cycleLength - 14;
+    summaryEl.innerHTML =
+      '<div>🩸 <strong>Dernières règles :</strong> ' + fmtDateFull(new Date(state.lastPeriod)) + '</div>' +
+      '<div>🔄 <strong>Durée du cycle :</strong> ' + state.cycleLength + ' jours &nbsp;|&nbsp; 🩸 <strong>Durée des règles :</strong> ' + state.periodLength + ' jours</div>' +
+      '<div>📅 <strong>Cycles calculés :</strong> ' + state.cycles.length + ' (' + pastCycles + ' passés · ' + futureCycles + ' à venir)</div>' +
+      '<div>🌿 <strong>Jours fertiles / cycle :</strong> 6 jours (J' + (ovDay-5) + ' à J' + (ovDay+1) + ')</div>' +
+      '<div>🥚 <strong>Ovulation estimée :</strong> Jour ' + ovDay + ' de chaque cycle</div>' +
+      (daysToNext !== null ? '<div>⏳ <strong>Prochaines règles :</strong> ' + fmtDateFull(nextPeriod) + ' (dans ' + daysToNext + ' jour' + (daysToNext>1?'s':'') + ')</div>' : '') +
+      (cur ? '<div>📍 <strong>Phase actuelle :</strong> ' + (
+        now<=cur.periodEnd ? 'Menstruation 🩸' :
+        now>=cur.fStart&&now<=cur.fEnd ? 'Fenêtre fertile 🌿' :
+        fmtISO(now)===fmtISO(cur.ovulation) ? 'Ovulation 🥚' :
+        now<cur.fStart ? 'Phase folliculaire 💙' : 'Phase lutéale 💜'
+      ) + ' — Jour ' + (diffDays(cur.periodStart,now)+1) + ' sur ' + state.cycleLength + '</div>' : '');
+    document.getElementById('print-summary').style.display = 'block';
+    const cl = +state.cycleLength;
+    let tips = [];
+    if (cl >= 25 && cl <= 35) tips.push('✅ <strong>Cycle régulier :</strong> Votre cycle de ' + cl + ' jours est dans la plage normale (25–35j).');
+    else tips.push('⚠️ <strong>Cycle atypique :</strong> Votre cycle de ' + cl + ' jours sort des normes (25–35j). Une consultation médicale peut être utile.');
+    tips.push('💧 <strong>Hydratation :</strong> Boire 1,5 à 2L d'eau par jour peut réduire les crampes et la fatigue.');
+    tips.push('🌿 <strong>Phase fertile :</strong> La fertilité est maximale les 5 jours avant l'ovulation et le jour J.');
+    tips.push('💆 <strong>Phase de règles :</strong> Privilégiez le repos, les aliments riches en fer et l'hydratation.');
+    tips.push('⚡ <strong>Phase folliculaire :</strong> Période idéale pour l'exercice intense et les nouvelles initiatives.');
+    tips.push('🌙 <strong>Phase lutéale :</strong> La progestérone augmente. Priorisez le sommeil et les activités douces.');
+    document.getElementById('print-insights-body').innerHTML = tips.map(function(t){return '<div style="margin-bottom:6px;padding:6px 10px;background:#fff5f9;border-radius:6px">'+t+'</div>';}).join('');
+    document.getElementById('print-insights').style.display = 'block';
+  }
   window.print();
+  setTimeout(function(){
+    document.getElementById('print-summary').style.display = 'none';
+    document.getElementById('print-insights').style.display = 'none';
+  }, 1000);
 }
 
 /* ═══════════════════════════════════════════════
@@ -1684,13 +1808,32 @@ async function syncGDrive(silent = false) {
   const payload = JSON.stringify(buildPayload(), null, 2);
   const blob = new Blob([payload], {type:'application/json'});
   try {
+    // Créer ou retrouver le dossier "Cycle menstruel"
+    let folderId = state.gdriveFolderId;
+    if (!folderId) {
+      const folderSearch = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${LUNA_FOLDER}'+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)`, { headers:{Authorization:`Bearer ${state.gdriveToken}`} });
+      if (folderSearch.ok) {
+        const fd = await folderSearch.json();
+        if (fd.files?.length) { folderId = fd.files[0].id; }
+        else {
+          const createFolder = await fetch('https://www.googleapis.com/drive/v3/files', { method:'POST', headers:{Authorization:`Bearer ${state.gdriveToken}`,'Content-Type':'application/json'}, body:JSON.stringify({name:LUNA_FOLDER,mimeType:'application/vnd.google-apps.folder'}) });
+          if (createFolder.ok) { const cf = await createFolder.json(); folderId = cf.id; }
+        }
+      }
+      if (folderId) { state.gdriveFolderId = folderId; saveLocal(); }
+    }
     let fileId = state.gdriveFileId;
     if (!fileId) {
-      const search = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${LUNA_FILENAME}'+and+trashed=false&fields=files(id,name)`, { headers:{Authorization:`Bearer ${state.gdriveToken}`} });
+      const q = folderId
+        ? `name='${LUNA_FILENAME}'+and+'${folderId}'+in+parents+and+trashed=false`
+        : `name='${LUNA_FILENAME}'+and+trashed=false`;
+      const search = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`, { headers:{Authorization:`Bearer ${state.gdriveToken}`} });
       if (search.ok) { const d = await search.json(); if (d.files?.length) fileId = d.files[0].id; }
     }
+    const meta = {name:LUNA_FILENAME,mimeType:'application/json'};
+    if (folderId && !fileId) meta.parents = [folderId];
     const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify({name:LUNA_FILENAME,mimeType:'application/json'})], {type:'application/json'}));
+    form.append('metadata', new Blob([JSON.stringify(meta)], {type:'application/json'}));
     form.append('file', blob);
     const url = fileId
       ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
