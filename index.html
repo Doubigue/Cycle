@@ -567,11 +567,37 @@ body.dark .mood-btn{background:rgba(255,107,157,.1)}
 @media print {
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
   body{background:#fff !important;color:#222 !important;font-family:'DM Sans',sans-serif !important}
-  .bg-orbs,nav,header .header-right,.toast,#modal-overlay,#sky-canvas,#splash,#auth-screen{display:none !important}
+  .bg-orbs,nav,header,.toast,#modal-overlay,#sky-canvas,#splash,#auth-screen{display:none !important}
   #page-settings,#page-calendar,#page-insights,#page-journal,#page-dashboard{display:none !important}
   #page-table{display:block !important;padding:0 !important}
-  header{padding:16px 0 8px !important}
-  .logo{-webkit-text-fill-color:#e0407a !important;color:#e0407a !important}
+
+  /* PAGE 1 : couverture + résumé + conseils */
+  #print-page1{display:block !important}
+  #print-cover{
+    display:flex !important;
+    width:100%;
+    align-items:center; justify-content:center;
+    padding:60px 0 40px;
+    background:linear-gradient(160deg,#fff0f8 0%,#ffd6e7 40%,#e8c8f8 100%) !important;
+    border-radius:12px;
+    margin-bottom:28px;
+  }
+  .print-cover-inner{text-align:center}
+  .print-cover-moon{font-size:3.5rem;margin-bottom:14px}
+  .print-cover-logo{font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:#e0407a;line-height:1;margin-bottom:4px}
+  .print-cover-sub{font-size:.75rem;letter-spacing:5px;text-transform:uppercase;color:#9b7ea4;margin-bottom:22px}
+  .print-cover-line{width:60px;height:3px;background:linear-gradient(90deg,#ff6b9d,#c084fc);border-radius:2px;margin:0 auto 20px}
+  .print-cover-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#2d1033;margin-bottom:8px}
+  .print-cover-year{font-size:2.2rem;font-weight:700;color:#e0407a;margin-bottom:20px}
+  .print-cover-footer{font-size:.72rem;color:#9b7ea4;letter-spacing:1px}
+
+  #print-header{display:block !important;margin-bottom:20px !important}
+  #print-summary{display:block !important}
+  #print-insights{display:block !important}
+
+  /* PAGE 2 : tableau — saut de page avant */
+  #print-page2{display:block !important;page-break-before:always !important}
+
   .timeline-table-wrap{overflow:visible !important;box-shadow:none !important;border:2px solid #e0407a !important;border-radius:10px !important;margin-bottom:24px !important}
   table.timeline{font-size:.82rem !important;width:100% !important}
   table.timeline thead tr{background:#e0407a !important;color:#fff !important}
@@ -584,16 +610,17 @@ body.dark .mood-btn{background:rgba(255,107,157,.1)}
   .badge-fertile{background:#d1fae5 !important;color:#065f46 !important}
   .badge-follicular{background:#dbeafe !important;color:#1e40af !important}
   .badge-luteal{background:#ede9fe !important;color:#5b21b6 !important}
-  .btn-sm,.search-wrap{display:none !important}
-  #print-header{display:block !important}
-  #print-summary{display:block !important}
-  #print-insights{display:block !important}
-  #app{padding:0 16px !important;max-width:100% !important;opacity:1 !important;pointer-events:all !important}
+  .btn-sm,.search-wrap,.sec-header .timeline-title{display:none !important}
+  .sec-header{display:none !important}
   .card{box-shadow:none !important;border:1px solid #f0dce8 !important;margin-bottom:16px !important}
   .history-chart{display:none !important}
-  @page{margin:20mm;size:A4}
+  #app{padding:0 16px !important;max-width:100% !important;opacity:1 !important;pointer-events:all !important}
+  @page{margin:18mm;size:A4}
 }
 #print-header{display:none}
+#print-cover{display:none}
+#print-page1{display:none}
+#print-page2 .sec-header{display:flex}
 
 /* Modal */
 #modal-overlay{position:fixed;inset:0;background:rgba(26,10,20,.6);backdrop-filter:blur(8px);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
@@ -794,26 +821,45 @@ body.dark .modal-sheet{background:#2a0a22}
 
   <!-- TABLE -->
   <div id="page-table" class="page">
-    <div id="print-header" style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.6rem">🌙</div>
-        <div>
-          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:#e0407a;line-height:1">Luna</div>
-          <div style="font-size:.75rem;letter-spacing:3px;text-transform:uppercase;color:#9b7ea4">Suivi de cycle féminin</div>
+    <!-- Page de couverture (visible uniquement à l'impression) -->
+    <!-- PAGE 1 : couverture + résumé + conseils -->
+    <div id="print-page1">
+      <div id="print-cover">
+        <div class="print-cover-inner">
+          <div class="print-cover-moon">🌙</div>
+          <div class="print-cover-logo">Luna</div>
+          <div class="print-cover-sub">Suivi de Cycle Féminin</div>
+          <div class="print-cover-line"></div>
+          <div class="print-cover-title">Calendrier Menstruel</div>
+          <div class="print-cover-year" id="print-cover-year"></div>
+          <div class="print-cover-footer">Généré le <span id="print-cover-date"></span></div>
         </div>
       </div>
-      <div style="font-size:1.3rem;font-family:'Playfair Display',serif;font-weight:700;color:#2d1033;margin-bottom:4px">Calendrier du cycle menstruel</div>
-      <div style="font-size:.8rem;color:#9b7ea4;margin-bottom:2px">Généré le <span id="print-date"></span></div>
-      <div style="height:2px;background:linear-gradient(90deg,#ff6b9d,#c084fc,transparent);border-radius:2px;margin-top:12px"></div>
+
+      <div id="print-header" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+          <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.6rem">🌙</div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:#e0407a;line-height:1">Luna</div>
+            <div style="font-size:.75rem;letter-spacing:3px;text-transform:uppercase;color:#9b7ea4">Suivi de cycle féminin</div>
+          </div>
+        </div>
+        <div style="font-size:1.3rem;font-family:'Playfair Display',serif;font-weight:700;color:#2d1033;margin-bottom:4px">Calendrier du cycle menstruel</div>
+        <div style="font-size:.8rem;color:#9b7ea4;margin-bottom:2px">Généré le <span id="print-date"></span></div>
+        <div style="height:2px;background:linear-gradient(90deg,#ff6b9d,#c084fc,transparent);border-radius:2px;margin-top:12px"></div>
+      </div>
+      <div id="print-summary" style="display:none;margin-bottom:20px;padding:16px 20px;background:#fff5f9;border-left:4px solid #e0407a;border-radius:0 10px 10px 0">
+        <div style="font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:8px">📋 Résumé de votre cycle</div>
+        <div id="print-summary-body" style="font-size:.85rem;color:#4a1942;line-height:1.9"></div>
+      </div>
+      <div id="print-insights" style="display:none;margin-bottom:20px">
+        <div style="font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:10px">✨ Conseils &amp; points d'attention</div>
+        <div id="print-insights-body" style="font-size:.83rem;color:#4a1942;line-height:1.8"></div>
+      </div>
     </div>
-    <div id="print-summary" style="display:none;margin-bottom:20px;padding:16px 20px;background:#fff5f9;border-left:4px solid #e0407a;border-radius:0 10px 10px 0">
-      <div style="font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:8px">📋 Résumé de votre cycle</div>
-      <div id="print-summary-body" style="font-size:.85rem;color:#4a1942;line-height:1.9"></div>
-    </div>
-    <div id="print-insights" style="display:none;margin-bottom:20px">
-      <div style="font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:10px">✨ Conseils &amp; points d'attention</div>
-      <div id="print-insights-body" style="font-size:.83rem;color:#4a1942;line-height:1.8"></div>
-    </div>
+
+    <!-- PAGE 2 : tableau -->
+    <div id="print-page2">
     <div class="sec-header">
       <div class="timeline-title">Calendrier annuel</div>
       <button class="btn-sm" onclick="printTable()">🖨️ Imprimer</button>
@@ -838,6 +884,7 @@ body.dark .modal-sheet{background:#2a0a22}
         <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#6ee7b7;border-radius:2px;display:inline-block"></span>Fenêtre fertile</span>
       </div>
     </div>
+    </div><!-- end print-page2 -->
   </div>
 
   <!-- INSIGHTS -->
@@ -1560,7 +1607,10 @@ function filterTable() {
     c.ovulation.toLowerCase().includes(q)||c.fStart.toLowerCase().includes(q)));
 }
 function printTable() {
-  document.getElementById('print-date').textContent = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const _printDate = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('print-date').textContent = _printDate;
+  document.getElementById('print-cover-date').textContent = _printDate;
+  document.getElementById('print-cover-year').textContent = new Date().getFullYear();
   if (state.cycles.length) {
     const now = today(), pastCycles = state.cycles.filter(c => c.nextPeriod < now).length;
     const futureCycles = state.cycles.filter(c => c.periodStart > now).length;
