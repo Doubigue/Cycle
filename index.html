@@ -12,9 +12,6 @@
 <title>Luna — Cycle Féminin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 :root {
   --rose:      #ff6b9d;
@@ -127,6 +124,8 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 .cal-day.fertile{background:linear-gradient(135deg,#6ee7b7,#34d399);color:#fff}
 .cal-day.ovulation{background:linear-gradient(135deg,#fdba74,#f97316);color:#fff;box-shadow:0 0 0 3px rgba(249,115,22,.3)}
 .cal-day.today-ring{box-shadow:0 0 0 2px var(--rose-deep)}
+.cal-day.has-note::after{content:'•';position:absolute;bottom:1px;font-size:.5rem;color:var(--lavender)}
+.cal-day{position:relative}
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--muted)}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -146,6 +145,8 @@ table.timeline th{padding:12px 10px;text-align:left;font-weight:600;letter-spaci
 table.timeline td{padding:10px 10px;vertical-align:middle;border-bottom:1px solid rgba(255,107,157,.08)}
 table.timeline tr:last-child td{border-bottom:none}
 table.timeline tbody tr:hover td{background:rgba(255,107,157,.05)}
+
+/* ── Badges ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;white-space:nowrap}
 .badge-period{background:rgba(255,107,157,.18);color:#c0215a}
 .badge-fertile{background:rgba(110,231,183,.25);color:#065f46}
@@ -166,27 +167,139 @@ table.timeline tbody tr:hover td{background:rgba(255,107,157,.05)}
 .btn-secondary:hover{background:rgba(255,107,157,.18)}
 .btn-tertiary{width:100%;padding:13px;border-radius:14px;background:rgba(192,132,252,.12);color:#7c3aed;border:1.5px solid rgba(192,132,252,.25);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;transition:background .2s;margin-top:10px}
 .btn-tertiary:hover{background:rgba(192,132,252,.22)}
-.firebase-steps{margin-top:14px;border-radius:14px;background:rgba(255,107,157,.07);padding:14px;font-size:.8rem;color:var(--mid);line-height:1.9}
-.firebase-steps strong{display:block;margin-bottom:4px}
-.step-num{color:var(--rose-deep);font-weight:700}
+.btn-drive{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;transition:transform .2s,opacity .2s;margin-top:10px}
+.btn-drive:hover{transform:translateY(-1px);opacity:.92}
+.btn-drive:disabled{opacity:.5;cursor:not-allowed;transform:none}
 code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size:.78rem}
 
 /* ── Toast ── */
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:12px 24px;border-radius:30px;font-size:.85rem;font-weight:500;opacity:0;transition:opacity .3s,transform .3s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:12px 24px;border-radius:30px;font-size:.85rem;font-weight:500;opacity:0;transition:opacity .3s,transform .3s;z-index:200;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── Section title ── */
 .sec-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
 
+/* ── Mood Tracker ── */
+.mood-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.mood-btn{width:52px;height:52px;border-radius:50%;background:var(--glass);border:2px solid transparent;cursor:pointer;font-size:1.6rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.mood-btn.selected{border-color:var(--rose);background:var(--blush);transform:scale(1.1)}
+.mood-btn:hover{transform:scale(1.08)}
+.symptom-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.symptom-chip{padding:6px 14px;border-radius:20px;background:var(--glass);border:1.5px solid transparent;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--mid);transition:all .2s}
+.symptom-chip.selected{background:rgba(255,107,157,.2);border-color:var(--rose);color:var(--rose-deep)}
+
+/* ── Insights Panel ── */
+.insight-card{border-radius:20px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.insight-card.tip{background:linear-gradient(135deg,rgba(110,231,183,.15),rgba(52,211,153,.08));border:1px solid rgba(110,231,183,.3)}
+.insight-card.warning{background:linear-gradient(135deg,rgba(253,186,116,.2),rgba(249,115,22,.08));border:1px solid rgba(253,186,116,.4)}
+.insight-card.info{background:linear-gradient(135deg,rgba(192,132,252,.15),rgba(168,85,247,.08));border:1px solid rgba(192,132,252,.3)}
+.insight-icon{font-size:1.8rem;margin-bottom:6px}
+.insight-title{font-weight:700;font-size:.9rem;margin-bottom:4px}
+.insight-body{font-size:.8rem;color:var(--muted);line-height:1.5}
+
+/* ── Backup List ── */
+.backup-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.backup-item:last-child{border-bottom:none}
+.backup-info{flex:1}
+.backup-name{font-size:.82rem;font-weight:600;color:var(--text)}
+.backup-date{font-size:.72rem;color:var(--muted);margin-top:2px}
+.backup-actions{display:flex;gap:8px}
+.backup-btn{padding:5px 12px;border-radius:12px;border:none;cursor:pointer;font-size:.72rem;font-weight:600;transition:all .2s}
+.backup-restore{background:rgba(66,133,244,.12);color:#4285f4}
+.backup-restore:hover{background:rgba(66,133,244,.22)}
+.backup-delete{background:rgba(239,68,68,.1);color:#ef4444}
+.backup-delete:hover{background:rgba(239,68,68,.2)}
+
+/* ── Notes textarea ── */
+.note-area{width:100%;padding:12px;border-radius:14px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);resize:vertical;min-height:80px;outline:none;transition:border-color .2s}
+.note-area:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(255,107,157,.15)}
+
+/* ── Cycle Ring (visual) ── */
+.cycle-ring-wrap{display:flex;justify-content:center;margin:12px 0}
+svg.cycle-ring{filter:drop-shadow(0 4px 12px rgba(255,107,157,.2))}
+
+/* ── Dark mode toggle ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:.85rem;font-weight:500}
+.toggle{width:44px;height:24px;border-radius:12px;background:#e2d1e8;border:none;cursor:pointer;position:relative;transition:background .3s}
+.toggle.on{background:var(--rose)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.toggle.on::after{transform:translateX(20px)}
+
+/* ── Dark mode styles ── */
+body.dark{background:#1a0a14;color:#f0d8e8}
+body.dark .card{background:rgba(60,20,50,.7);border-color:rgba(255,107,157,.15)}
+body.dark .stat-card{background:rgba(60,20,50,.7);border-color:rgba(255,107,157,.15)}
+body.dark nav{background:rgba(26,10,20,.95)}
+body.dark .input-field{background:rgba(60,20,50,.8);color:#f0d8e8;border-color:rgba(255,107,157,.25)}
+body.dark .note-area{background:rgba(60,20,50,.8);color:#f0d8e8}
+body.dark .bg-orbs .orb{opacity:.2}
+body.dark .symptom-chip{background:rgba(255,107,157,.1);color:#d8a0c4}
+body.dark .mood-btn{background:rgba(255,107,157,.1)}
+
+/* ── Pill reminder ── */
+.pill-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.pill-row:last-child{border-bottom:none}
+.pill-name{font-size:.85rem;font-weight:500}
+.pill-time{font-size:.75rem;color:var(--muted)}
+.pill-check{width:28px;height:28px;border-radius:50%;background:rgba(110,231,183,.15);border:2px solid rgba(110,231,183,.4);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.pill-check.done{background:rgba(110,231,183,.4);border-color:#10b981}
+
+/* ── Fertility score bar ── */
+.fertility-bar-wrap{margin:12px 0}
+.fertility-score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fertility-score-val{font-size:1.6rem;font-weight:700;color:var(--rose-deep)}
+.fertility-bar{height:14px;border-radius:8px;background:#f3e8f5;overflow:hidden}
+.fertility-fill{height:100%;border-radius:8px;transition:width .6s ease;background:linear-gradient(90deg,#ff6b9d,#6ee7b7)}
+
+/* ── Notification badge on nav ── */
+.nav-badge{width:8px;height:8px;border-radius:50%;background:var(--rose);position:absolute;top:6px;right:12px;animation:pulse-dot 2s infinite}
+
+/* ── Search bar in table ── */
+.search-input{width:100%;padding:10px 16px 10px 40px;border-radius:14px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);outline:none;margin-bottom:12px;position:relative}
+.search-wrap{position:relative;margin-bottom:10px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none}
+
+/* ── Stats History Chart ── */
+.history-chart{height:80px;display:flex;align-items:flex-end;gap:4px;padding:8px 0}
+.history-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:height .4s ease;position:relative;cursor:pointer}
+.history-bar-label{font-size:.55rem;color:var(--muted);text-align:center;margin-top:4px}
+.history-bar-val{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.6rem;color:var(--rose-deep);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .2s}
+.history-bar:hover .history-bar-val{opacity:1}
+
 /* ── Print ── */
-@media print{
-  .bg-orbs,nav,header .sync-btn,#page-settings,#page-dashboard,#page-calendar{display:none!important}
-  #page-table{display:block!important}
-  body{background:#fff}
-  table.timeline{box-shadow:none}
-  .timeline-table-wrap{overflow:visible}
-  .btn-sm{display:none}
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .bg-orbs, nav, header .sync-btn, .toast, #modal-overlay { display: none !important; }
+  #page-settings, #page-calendar, #page-insights, #page-journal { display: none !important; }
+  #page-dashboard { display: none !important; }
+  #page-table { display: block !important; padding: 0 !important; }
+  header { padding: 16px 0 8px !important; }
+  .logo { -webkit-text-fill-color: #e0407a !important; color: #e0407a !important; }
+  .timeline-table-wrap { overflow: visible !important; box-shadow: none !important; border: 1px solid #ddd !important; border-radius: 8px !important; }
+  table.timeline { font-size: .82rem !important; }
+  table.timeline thead tr { background: #e0407a !important; color: #fff !important; }
+  table.timeline th { padding: 10px 8px !important; }
+  table.timeline td { padding: 8px 8px !important; }
+  .btn-sm { display: none !important; }
+  .sec-header { margin-bottom: 12px !important; }
+  .badge { -webkit-print-color-adjust: exact !important; }
+  #print-header { display: block !important; }
+  #app { padding: 0 16px !important; max-width: 100% !important; }
 }
+#print-header { display: none; }
+
+/* ── Modal overlay ── */
+#modal-overlay{position:fixed;inset:0;background:rgba(26,10,20,.6);backdrop-filter:blur(8px);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+#modal-overlay.open{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--cream);border-radius:28px 28px 0 0;padding:28px 20px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease}
+#modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(155,126,164,.4);margin:0 auto 20px}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:16px;text-align:center}
+body.dark .modal-sheet{background:#2a0a22}
+
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-thumb{background:rgba(255,107,157,.3);border-radius:3px}
 </style>
@@ -201,7 +314,9 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
 <div id="app">
   <header>
     <div class="logo">Lu<span>na</span></div>
-    <button class="sync-btn" id="sync-btn" onclick="quickSync()" title="Synchroniser">☁️</button>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="sync-btn" id="sync-btn" onclick="quickSyncDrive()" title="Synchroniser Google Drive">☁️</button>
+    </div>
   </header>
 
   <!-- ───── DASHBOARD ───── -->
@@ -216,6 +331,23 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
       <div class="phase-day" id="hero-day-badge">
         <div class="phase-day-num" id="hero-day-num">—</div>
         <div class="phase-day-lbl">Jour</div>
+      </div>
+    </div>
+
+    <!-- Fertility Score -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="sec-title">🌸 Score de fertilité</div>
+        <div id="fertility-label" style="font-size:.75rem;font-weight:600;color:var(--muted)">—</div>
+      </div>
+      <div class="fertility-bar-wrap">
+        <div class="fertility-score-row">
+          <div class="fertility-score-val" id="fertility-score">—</div>
+          <div style="font-size:.75rem;color:var(--muted)">/ 100</div>
+        </div>
+        <div class="fertility-bar">
+          <div class="fertility-fill" id="fertility-fill" style="width:0%"></div>
+        </div>
       </div>
     </div>
 
@@ -255,9 +387,22 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
       <div id="progress-info" style="font-size:.8rem;color:var(--muted);margin-top:8px">—</div>
     </div>
 
+    <!-- Mood Today Quick Log -->
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">😊 Comment vous sentez-vous ?</div>
+      <div class="mood-grid" id="quick-mood-grid">
+        <button class="mood-btn" data-mood="😊" onclick="quickMood('😊')">😊</button>
+        <button class="mood-btn" data-mood="😢" onclick="quickMood('😢')">😢</button>
+        <button class="mood-btn" data-mood="😤" onclick="quickMood('😤')">😤</button>
+        <button class="mood-btn" data-mood="😴" onclick="quickMood('😴')">😴</button>
+        <button class="mood-btn" data-mood="🥰" onclick="quickMood('🥰')">🥰</button>
+      </div>
+      <div id="quick-mood-saved" style="font-size:.8rem;color:var(--muted);text-align:center;display:none">✅ Humeur enregistrée !</div>
+    </div>
+
     <div id="cloud-status-dash" class="cloud-bar warn" onclick="navigate('settings')">
       <div class="cloud-dot dot-warn" id="cloud-dot-dash"></div>
-      <div id="cloud-text-dash">☁️ Firebase non connecté — Appuyez pour configurer</div>
+      <div id="cloud-text-dash">☁️ Google Drive non connecté — Appuyez pour configurer</div>
     </div>
   </div>
 
@@ -281,14 +426,26 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
     <div id="cal-day-detail" class="card" style="display:none">
       <div class="sec-title" id="cal-detail-title">—</div>
       <div id="cal-detail-body" style="font-size:.85rem;color:var(--muted);margin-top:6px">—</div>
+      <div style="margin-top:12px">
+        <textarea class="note-area" id="cal-note-area" placeholder="📝 Ajouter une note pour ce jour…" rows="3"></textarea>
+        <button class="btn-primary" style="padding:10px;font-size:.82rem;margin-top:8px" onclick="saveCalNote()">💾 Enregistrer la note</button>
+      </div>
     </div>
   </div>
 
   <!-- ───── TABLE ───── -->
   <div id="page-table" class="page">
+    <div id="print-header" style="margin-bottom:16px">
+      <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0407a">Luna — Calendrier Cycle Féminin</div>
+      <div style="font-size:.8rem;color:#666;margin-top:4px">Généré le <span id="print-date"></span></div>
+    </div>
     <div class="sec-header">
       <div class="timeline-title">Calendrier annuel</div>
-      <button class="btn-sm" onclick="window.print()">🖨️ Imprimer</button>
+      <button class="btn-sm" onclick="printTable()">🖨️ Imprimer</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="table-search" placeholder="Rechercher un cycle, une date…" oninput="filterTable()">
     </div>
     <div class="timeline-table-wrap">
       <table class="timeline">
@@ -307,6 +464,48 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
           <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Configurez votre cycle dans les paramètres</td></tr>
         </tbody>
       </table>
+    </div>
+    <!-- History chart -->
+    <div class="card" style="margin-top:16px">
+      <div class="sec-title" style="margin-bottom:10px">📊 Historique des cycles</div>
+      <div class="history-chart" id="history-chart"></div>
+      <div style="display:flex;justify-content:center;gap:16px;font-size:.7rem;color:var(--muted);margin-top:4px">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#ff6b9d;border-radius:2px;display:inline-block"></span>Règles</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#6ee7b7;border-radius:2px;display:inline-block"></span>Fenêtre fertile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── INSIGHTS ───── -->
+  <div id="page-insights" class="page">
+    <div style="padding:0 4px;margin-bottom:16px">
+      <div class="timeline-title">✨ Insights & Conseils</div>
+    </div>
+    <div id="insights-container"></div>
+
+    <!-- Pill / Supplement reminder -->
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">💊 Rappels du jour</div>
+      <div id="pill-list">
+        <div class="pill-row">
+          <div><div class="pill-name">🌿 Acide folique</div><div class="pill-time">Matin — 09:00</div></div>
+          <button class="pill-check" id="pill-folate" onclick="togglePill('pill-folate')">○</button>
+        </div>
+        <div class="pill-row">
+          <div><div class="pill-name">☀️ Vitamine D</div><div class="pill-time">Midi — 12:00</div></div>
+          <button class="pill-check" id="pill-vitd" onclick="togglePill('pill-vitd')">○</button>
+        </div>
+        <div class="pill-row">
+          <div><div class="pill-name">🫐 Magnésium</div><div class="pill-time">Soir — 21:00</div></div>
+          <button class="pill-check" id="pill-mag" onclick="togglePill('pill-mag')">○</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cycle stats -->
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📈 Statistiques</div>
+      <div id="cycle-stats-body" style="font-size:.85rem;color:var(--muted);line-height:2">—</div>
     </div>
   </div>
 
@@ -332,36 +531,32 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
       </div>
     </div>
 
-    <!-- Firebase settings -->
+    <!-- Google Drive settings -->
     <div class="settings-section">
-      <div class="settings-section-title">🔥 Firebase — Sauvegarde en ligne</div>
+      <div class="settings-section-title">☁️ Google Drive — Sauvegarde en ligne</div>
       <div class="card">
-        <div id="fb-status-card" class="cloud-bar warn" style="margin-bottom:14px;cursor:default">
-          <div class="cloud-dot dot-warn" id="fb-dot"></div>
-          <div id="fb-status-text">Non connecté à Firebase</div>
+        <div id="gdrive-status-card" class="cloud-bar warn" style="margin-bottom:14px;cursor:default">
+          <div class="cloud-dot dot-warn" id="gdrive-dot"></div>
+          <div id="gdrive-status-text">Non connecté à Google Drive</div>
         </div>
 
         <div class="input-group">
-          <label class="input-label">🔑 API Key Firebase</label>
-          <input type="text" class="input-field" id="input-fb-apikey" placeholder="AIzaSy…">
+          <label class="input-label">🔑 Google Client ID</label>
+          <input type="text" class="input-field" id="input-gdrive-clientid" placeholder="xxxxxxxx.apps.googleusercontent.com">
         </div>
-        <div class="input-group">
-          <label class="input-label">🗄️ Project ID</label>
-          <input type="text" class="input-field" id="input-fb-projectid" placeholder="luna-cycle-xxxxx">
-        </div>
-        <button class="btn-primary" onclick="connectFirebase()">🔥 Connecter Firebase</button>
-        <button class="btn-secondary" onclick="syncFirebase()">☁️ Sauvegarder dans le cloud</button>
-        <button class="btn-tertiary" onclick="restoreFirebase()">📥 Restaurer depuis le cloud</button>
+        <button class="btn-drive" onclick="connectGDrive()">🔵 Connecter Google Drive</button>
+        <button class="btn-secondary" onclick="syncGDrive(false)">☁️ Sauvegarder maintenant</button>
+        <button class="btn-tertiary" onclick="restoreGDrive()">📥 Restaurer depuis Drive</button>
+        <button class="btn-secondary" style="background:rgba(66,133,244,.1);color:#4285f4;border-color:rgba(66,133,244,.2)" onclick="showBackupList()">📋 Liste des sauvegardes</button>
 
-        <div class="firebase-steps">
-          <strong>📱 Configuration (5 min depuis votre téléphone) :</strong>
-          <span class="step-num">① </span>Allez sur <strong>console.firebase.google.com</strong><br>
-          <span class="step-num">② </span>Créer un projet → nommez-le <em>"luna-cycle"</em><br>
-          <span class="step-num">③ </span>Build → <strong>Firestore Database</strong> → Créer en mode Test<br>
-          <span class="step-num">④ </span>⚙️ Paramètres du projet → Vos applications → <strong>&lt;/&gt; Web</strong><br>
-          <span class="step-num">⑤ </span>Copiez <code>apiKey</code> et <code>projectId</code> ci-dessus<br>
-          <span class="step-num">⑥ </span>Cliquez <strong>Connecter Firebase</strong> ✅<br>
-          <span class="step-num">⑦ </span>Puis <strong>Sauvegarder dans le cloud</strong> ☁️
+        <div style="margin-top:14px;border-radius:14px;background:rgba(66,133,244,.06);padding:14px;font-size:.8rem;color:var(--mid);line-height:1.9">
+          <strong style="display:block;margin-bottom:4px">📱 Configuration Google Drive :</strong>
+          <span style="color:#4285f4;font-weight:700">① </span>Allez sur <strong>console.cloud.google.com</strong><br>
+          <span style="color:#4285f4;font-weight:700">② </span>Créer un projet → Activer l'API <strong>Google Drive</strong><br>
+          <span style="color:#4285f4;font-weight:700">③ </span>Identifiants → ID client OAuth 2.0 (Application Web)<br>
+          <span style="color:#4285f4;font-weight:700">④ </span>Origines autorisées : votre URL<br>
+          <span style="color:#4285f4;font-weight:700">⑤ </span>Copiez le <code>Client ID</code> ci-dessus<br>
+          <span style="color:#4285f4;font-weight:700">⑥ </span>Cliquez <strong>Connecter Google Drive</strong> ✅
         </div>
       </div>
     </div>
@@ -378,6 +573,79 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
         <div style="margin-top:10px;font-size:.75rem;color:var(--muted);text-align:center">Sauvegardez un fichier JSON sur votre téléphone en cas de panne</div>
       </div>
     </div>
+
+    <!-- Preferences -->
+    <div class="settings-section">
+      <div class="settings-section-title">⚙️ Préférences</div>
+      <div class="card">
+        <div class="toggle-row">
+          <span class="toggle-label">🌙 Mode sombre</span>
+          <button class="toggle" id="toggle-dark" onclick="toggleDark()"></button>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">🔔 Alertes période imminente</span>
+          <button class="toggle on" id="toggle-notif" onclick="toggleNotif()"></button>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">☁️ Sauvegarde auto (silencieuse)</span>
+          <button class="toggle on" id="toggle-autosave" onclick="toggleAutosave()"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="settings-section">
+      <div class="settings-section-title">ℹ️ À propos</div>
+      <div class="card" style="text-align:center;padding:24px">
+        <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;background:linear-gradient(135deg,var(--rose-deep),var(--lavender));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">Luna v2.0</div>
+        <div style="font-size:.82rem;color:var(--muted)">Suivi de cycle menstruel • Données stockées localement et sur Google Drive</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:8px">🔒 Vos données vous appartiennent</div>
+        <button class="btn-secondary" style="margin-top:14px" onclick="resetApp()">🗑️ Réinitialiser l'application</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── JOURNAL ───── -->
+  <div id="page-journal" class="page">
+    <div style="padding:0 4px;margin-bottom:16px">
+      <div class="timeline-title">📓 Journal & Symptômes</div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">😊 Humeur aujourd'hui</div>
+      <div class="mood-grid" id="journal-mood-grid">
+        <button class="mood-btn" data-mood="😊" onclick="setJournalMood('😊')">😊</button>
+        <button class="mood-btn" data-mood="😢" onclick="setJournalMood('😢')">😢</button>
+        <button class="mood-btn" data-mood="😤" onclick="setJournalMood('😤')">😤</button>
+        <button class="mood-btn" data-mood="😴" onclick="setJournalMood('😴')">😴</button>
+        <button class="mood-btn" data-mood="🥰" onclick="setJournalMood('🥰')">🥰</button>
+        <button class="mood-btn" data-mood="😰" onclick="setJournalMood('😰')">😰</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">🩺 Symptômes du jour</div>
+      <div class="symptom-list" id="symptom-list">
+        <span class="symptom-chip" onclick="toggleSymptom(this,'crampes')">🤕 Crampes</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'maux tête')">🤯 Maux de tête</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'fatigue')">😩 Fatigue</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'ballonnements')">💨 Ballonnements</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'acné')">🌸 Acné</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'sensibilité seins')">💗 Sensibilité seins</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'nausées')">🤢 Nausées</span>
+        <span class="symptom-chip" onclick="toggleSymptom(this,'douleurs dos')">🔙 Douleurs dos</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📝 Note du jour</div>
+      <textarea class="note-area" id="journal-note" placeholder="Comment vous sentez-vous aujourd'hui ? Notez vos pensées…" rows="4"></textarea>
+      <button class="btn-primary" style="margin-top:10px" onclick="saveJournalEntry()">💾 Enregistrer l'entrée</button>
+    </div>
+    <!-- Recent entries -->
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📖 Entrées récentes</div>
+      <div id="recent-entries">
+        <div style="font-size:.82rem;color:var(--muted);text-align:center;padding:12px">Aucune entrée pour le moment</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -392,12 +660,27 @@ code{background:rgba(255,107,157,.1);padding:1px 6px;border-radius:6px;font-size
   <button class="nav-item" id="nav-table" onclick="navigate('table')">
     <span class="nav-icon">📋</span><span>Tableau</span>
   </button>
+  <button class="nav-item" id="nav-insights" onclick="navigate('insights')">
+    <span class="nav-icon">✨</span><span>Insights</span>
+  </button>
+  <button class="nav-item" id="nav-journal" onclick="navigate('journal')">
+    <span class="nav-icon">📓</span><span>Journal</span>
+  </button>
   <button class="nav-item" id="nav-settings" onclick="navigate('settings')">
-    <span class="nav-icon">⚙️</span><span>Paramètres</span>
+    <span class="nav-icon">⚙️</span><span>Réglages</span>
   </button>
 </nav>
 
 <div class="toast" id="toast"></div>
+
+<!-- Modal overlay for backup list / notes -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">—</div>
+    <div id="modal-body"></div>
+  </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════
@@ -407,11 +690,21 @@ let state = {
   lastPeriod: null,
   cycleLength: 28,
   periodLength: 5,
-  fbApiKey: '',
-  fbProjectId: '',
-  cycles: []
+  gdriveClientId: '',
+  gdriveConnected: false,
+  gdriveToken: null,
+  gdriveFileId: null,
+  autoSave: true,
+  darkMode: false,
+  notifEnabled: true,
+  cycles: [],
+  journal: {},       // { "YYYY-MM-DD": { mood, symptoms, note } }
+  calNotes: {},      // { "YYYY-MM-DD": "note text" }
+  pillsToday: {},    // { "pill-id": bool }
+  lastAutoSave: null,
+  backupHistory: [], // [{name, fileId, date}]
+  currentCalDate: null
 };
-let fbApp = null, fbDB = null, fbReady = false;
 
 const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const DAYS_FR   = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
@@ -426,23 +719,55 @@ window.addEventListener('DOMContentLoaded', () => {
   else inp.value = state.lastPeriod;
   document.getElementById('input-cycle-length').value = state.cycleLength;
   document.getElementById('input-period-length').value = state.periodLength;
-  document.getElementById('input-fb-apikey').value  = state.fbApiKey  || '';
-  document.getElementById('input-fb-projectid').value = state.fbProjectId || '';
+  document.getElementById('input-gdrive-clientid').value = state.gdriveClientId || '';
+
+  applyDarkMode();
+  updateToggleUI();
 
   if (state.lastPeriod) { computeAll(); renderAll(); }
-  if (state.fbApiKey && state.fbProjectId) initFirebase(false);
-  else updateFBStatus(false);
+  updateDriveStatus();
   initCalViewMonth();
+  renderJournal();
+  loadPillsToday();
+
+  // Auto-restore from Drive if token valid
+  if (state.gdriveToken && state.gdriveConnected) {
+    setTimeout(() => syncGDrive(true), 2000);
+  }
+
+  // Auto-save every 5 minutes
+  setInterval(() => {
+    if (state.autoSave && state.gdriveToken && state.gdriveConnected && state.cycles.length) {
+      syncGDrive(true);
+    }
+  }, 5 * 60 * 1000);
+
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
 });
 
 // ═══════════════════════════════════════════
 //  LOCAL STORAGE
 // ═══════════════════════════════════════════
 function loadLocal() {
-  try { const s = JSON.parse(localStorage.getItem('luna_v2') || '{}'); state = {...state, ...s}; } catch(e){}
+  try {
+    const s = JSON.parse(localStorage.getItem('luna_v3') || '{}');
+    state = {...state, ...s};
+    // Rehydrate Date objects in cycles
+    if (state.cycles) {
+      state.cycles = state.cycles.map(c => ({
+        ...c,
+        periodStart: c.periodStart ? new Date(c.periodStart) : null,
+        periodEnd:   c.periodEnd   ? new Date(c.periodEnd)   : null,
+        ovulation:   c.ovulation   ? new Date(c.ovulation)   : null,
+        fStart:      c.fStart      ? new Date(c.fStart)      : null,
+        fEnd:        c.fEnd        ? new Date(c.fEnd)        : null,
+        nextPeriod:  c.nextPeriod  ? new Date(c.nextPeriod)  : null
+      }));
+    }
+  } catch(e) {}
 }
 function saveLocal() {
-  localStorage.setItem('luna_v2', JSON.stringify(state));
+  localStorage.setItem('luna_v3', JSON.stringify(state));
 }
 
 // ═══════════════════════════════════════════
@@ -453,6 +778,8 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.getElementById('nav-' + page).classList.add('active');
+  if (page === 'insights') renderInsights();
+  if (page === 'journal')  renderJournal();
 }
 
 // ═══════════════════════════════════════════
@@ -461,7 +788,7 @@ function navigate(page) {
 const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r; };
 const fmtDate = d => d ? d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '—';
 const fmtDateFull = d => d ? d.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}) : '—';
-const fmtISO = d => d.toISOString().slice(0,10);
+const fmtISO = d => d instanceof Date ? d.toISOString().slice(0,10) : (d ? new Date(d).toISOString().slice(0,10) : '');
 const diffDays = (a,b) => Math.round((b-a)/86400000);
 const today = () => new Date(new Date().toDateString());
 
@@ -499,7 +826,7 @@ function computeAll() {
 // ═══════════════════════════════════════════
 //  RENDER ALL
 // ═══════════════════════════════════════════
-function renderAll() { renderDashboard(); renderCalendar(); renderTable(); }
+function renderAll() { renderDashboard(); renderCalendar(); renderTable(); renderHistoryChart(); }
 
 // ═══════════════════════════════════════════
 //  DASHBOARD
@@ -516,22 +843,31 @@ function renderDashboard() {
   }
 
   let phaseName = '—', phaseDesc = '—', cycleDay = '—';
+  let fertilityScore = 0, fertilityLabel = 'Faible';
+
   if (cur) {
     const dayInCycle = diffDays(cur.periodStart, now) + 1;
     cycleDay = dayInCycle;
+    const pl = +state.periodLength, ovD = cl-14, fS = ovD-5, fE = ovD+1;
+
     if (now >= cur.periodStart && now <= cur.periodEnd) {
       phaseName = 'Menstruation'; phaseDesc = 'Phase de règles. Reposez-vous et hydratez-vous bien.';
+      fertilityScore = 5; fertilityLabel = 'Très faible';
     } else if (fmtISO(now) === fmtISO(cur.ovulation)) {
       phaseName = 'Ovulation 🥚'; phaseDesc = 'Jour J — pic de fertilité ! La probabilité de conception est maximale aujourd\'hui.';
+      fertilityScore = 98; fertilityLabel = 'Maximale 🔥';
     } else if (now >= cur.fStart && now <= cur.fEnd) {
       phaseName = 'Fenêtre fertile 🌿'; phaseDesc = 'Période de haute fertilité. Ovulation imminente, corps en pleine énergie.';
+      fertilityScore = 75; fertilityLabel = 'Élevée 🌿';
     } else if (now < cur.fStart) {
       phaseName = 'Phase folliculaire'; phaseDesc = 'Énergie en hausse, humeur positive. Le corps se prépare à l\'ovulation.';
+      fertilityScore = 15; fertilityLabel = 'Faible';
     } else {
       phaseName = 'Phase lutéale'; phaseDesc = 'Phase de soutien post-ovulatoire. Prenez soin de vous.';
+      fertilityScore = 20; fertilityLabel = 'Faible';
     }
+
     document.getElementById('hero-day-num').textContent = dayInCycle;
-    const pl = +state.periodLength, ovD = cl-14, fS = ovD-5, fE = ovD+1;
     document.getElementById('bar-period').style.width    = (pl/cl*100)+'%';
     document.getElementById('bar-follicular').style.width= ((fS-pl)/cl*100)+'%';
     document.getElementById('bar-fertile-seg').style.width= ((fE-fS)/cl*100)+'%';
@@ -543,6 +879,9 @@ function renderDashboard() {
   document.getElementById('hero-phase-name').textContent = phaseName;
   document.getElementById('hero-phase-desc').textContent = phaseDesc;
   document.getElementById('stat-cycle-day').textContent  = cycleDay !== '—' ? 'J' + cycleDay : '—';
+  document.getElementById('fertility-score').textContent = fertilityScore;
+  document.getElementById('fertility-fill').style.width  = fertilityScore + '%';
+  document.getElementById('fertility-label').textContent = fertilityLabel;
 
   const np = cur ? cur.nextPeriod : (state.cycles[0]?.periodStart);
   if (np) {
@@ -558,6 +897,15 @@ function renderDashboard() {
     document.getElementById('stat-fertile').textContent = fd <= 0 ? 'En cours' : fd + ' j';
     const od = diffDays(now, cur.ovulation);
     document.getElementById('stat-ovulation').textContent = od === 0 ? 'Aujourd\'hui !' : (od < 0 ? 'Passé' : od + ' j');
+  }
+
+  // Restore today's mood
+  const todayKey = fmtISO(today());
+  const entry = state.journal[todayKey];
+  if (entry && entry.mood) {
+    document.querySelectorAll('#quick-mood-grid .mood-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.mood === entry.mood);
+    });
   }
 }
 
@@ -591,21 +939,34 @@ function renderCalendar() {
   for (let d=1;d<=days;d++){
     const dt = new Date(y,m,d), key = fmtISO(dt), info = map[key];
     const el = document.createElement('div');
-    el.className = 'cal-day' + (info ? ' '+info.type : '') + (key===todayStr ? ' today-ring' : '');
+    let cls = 'cal-day' + (info ? ' '+info.type : '') + (key===todayStr ? ' today-ring' : '');
+    if (state.calNotes && state.calNotes[key]) cls += ' has-note';
+    el.className = cls;
     el.textContent = d;
-    el.addEventListener('click', () => showDayDetail(dt, info));
+    el.addEventListener('click', () => showDayDetail(dt, info, key));
     grid.appendChild(el);
   }
 }
 
-function showDayDetail(dt, info) {
+function showDayDetail(dt, info, key) {
+  state.currentCalDate = key;
   const box = document.getElementById('cal-day-detail');
   document.getElementById('cal-detail-title').textContent = fmtDateFull(dt);
   if (!info) document.getElementById('cal-detail-body').textContent = 'Aucun événement particulier.';
   else if (info.type==='period')    document.getElementById('cal-detail-body').innerHTML = '🩸 <strong>Jour de règles</strong> — Cycle #'+info.cycle.idx;
   else if (info.type==='ovulation') document.getElementById('cal-detail-body').innerHTML = '🥚 <strong>Jour J — Ovulation</strong> — Fertilité maximale. Cycle #'+info.cycle.idx;
   else if (info.type==='fertile')   document.getElementById('cal-detail-body').innerHTML = '🌿 <strong>Fenêtre fertile</strong> — Cycle #'+info.cycle.idx;
+  document.getElementById('cal-note-area').value = (state.calNotes && state.calNotes[key]) || '';
   box.style.display = 'block';
+}
+
+function saveCalNote() {
+  if (!state.currentCalDate) return;
+  if (!state.calNotes) state.calNotes = {};
+  state.calNotes[state.currentCalDate] = document.getElementById('cal-note-area').value;
+  saveLocal();
+  showToast('📝 Note enregistrée !');
+  renderCalendar();
 }
 
 function changeMonth(n) {
@@ -617,11 +978,12 @@ function changeMonth(n) {
 // ═══════════════════════════════════════════
 //  TABLE
 // ═══════════════════════════════════════════
+let tableData = [];
 function renderTable() {
   const tbody = document.getElementById('timeline-body');
   if (!state.cycles.length) return;
   const now = today();
-  tbody.innerHTML = state.cycles.map(c => {
+  tableData = state.cycles.map(c => {
     const isCurrent = now >= c.periodStart && now < c.nextPeriod;
     const isPast    = c.nextPeriod < now;
     let phase = isPast
@@ -632,16 +994,270 @@ function renderTable() {
           : now<c.fStart ? '<span class="badge badge-follicular">💙 Folliculaire</span>'
           : '<span class="badge badge-luteal">💜 Lutéale</span>')
         : '<span class="badge badge-follicular">À venir</span>';
-    return `<tr style="${isCurrent?'background:rgba(255,107,157,.06);font-weight:500':''}">
-      <td><strong>#${c.idx}</strong></td>
-      <td>${fmtDate(c.periodStart)}</td>
-      <td>${fmtDate(c.periodEnd)}</td>
-      <td>${fmtDate(c.fStart)}</td>
-      <td style="font-weight:700;color:#f97316">${fmtDate(c.ovulation)}</td>
-      <td>${fmtDate(c.fEnd)}</td>
-      <td>${phase}</td>
-    </tr>`;
+    return {
+      idx: c.idx,
+      periodStart: fmtDate(c.periodStart),
+      periodEnd: fmtDate(c.periodEnd),
+      fStart: fmtDate(c.fStart),
+      ovulation: fmtDate(c.ovulation),
+      fEnd: fmtDate(c.fEnd),
+      phase,
+      isCurrent
+    };
+  });
+  renderTableRows(tableData);
+}
+
+function renderTableRows(data) {
+  const tbody = document.getElementById('timeline-body');
+  tbody.innerHTML = data.map(c => `<tr style="${c.isCurrent?'background:rgba(255,107,157,.06);font-weight:500':''}">
+    <td><strong>#${c.idx}</strong></td>
+    <td>${c.periodStart}</td>
+    <td>${c.periodEnd}</td>
+    <td>${c.fStart}</td>
+    <td style="font-weight:700;color:#f97316">${c.ovulation}</td>
+    <td>${c.fEnd}</td>
+    <td>${c.phase}</td>
+  </tr>`).join('');
+}
+
+function filterTable() {
+  const q = document.getElementById('table-search').value.toLowerCase();
+  if (!q) { renderTableRows(tableData); return; }
+  const filtered = tableData.filter(c =>
+    String(c.idx).includes(q) ||
+    c.periodStart.toLowerCase().includes(q) ||
+    c.ovulation.toLowerCase().includes(q) ||
+    c.fStart.toLowerCase().includes(q)
+  );
+  renderTableRows(filtered);
+}
+
+function printTable() {
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+  window.print();
+}
+
+// ═══════════════════════════════════════════
+//  HISTORY CHART
+// ═══════════════════════════════════════════
+function renderHistoryChart() {
+  const container = document.getElementById('history-chart');
+  if (!container || !state.cycles.length) return;
+  const recent = state.cycles.slice(0, 12);
+  const maxH = 70;
+  container.innerHTML = recent.map(c => {
+    const periodDays = +state.periodLength;
+    const fertileDays = 6;
+    const hP = Math.round((periodDays / +state.cycleLength) * maxH);
+    const hF = Math.round((fertileDays / +state.cycleLength) * maxH);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+      <div class="history-bar" style="height:${hP}px;background:linear-gradient(180deg,#ff6b9d,#e0407a);width:100%">
+        <div class="history-bar-val">${periodDays}j</div>
+      </div>
+      <div class="history-bar-label">#${c.idx}</div>
+    </div>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  INSIGHTS
+// ═══════════════════════════════════════════
+function renderInsights() {
+  const container = document.getElementById('insights-container');
+  const now = today(), cl = +state.cycleLength, pl = +state.periodLength;
+  let insights = [];
+
+  if (!state.cycles.length) {
+    container.innerHTML = '<div class="insight-card info"><div class="insight-body">Configurez votre cycle dans les Réglages pour voir vos insights personnalisés.</div></div>';
+    renderCycleStats();
+    return;
+  }
+
+  let cur = null;
+  for (const c of state.cycles) {
+    if (now >= c.periodStart && now < c.nextPeriod) { cur = c; break; }
+  }
+
+  if (cur) {
+    const daysLeft = diffDays(now, cur.nextPeriod);
+    const dayIn = diffDays(cur.periodStart, now) + 1;
+    const ovDays = diffDays(now, cur.ovulation);
+
+    if (daysLeft <= 3 && daysLeft >= 0) {
+      insights.push({type:'warning', icon:'🩸', title:'Règles imminentes', body:`Vos prochaines règles arrivent dans ${daysLeft} jour${daysLeft>1?'s':''}. Préparez votre trousse de confort ! Thé chaud, coussin chauffant, chocolat…`});
+    }
+    if (ovDays === 1) {
+      insights.push({type:'tip', icon:'🥚', title:'Ovulation demain !', body:'Demain est votre Jour J. Si vous essayez de concevoir, c\'est le moment clé. Votre fertilité est à son pic.'});
+    }
+    if (fmtISO(now) === fmtISO(cur.ovulation)) {
+      insights.push({type:'warning', icon:'🔥', title:'Jour d\'ovulation aujourd\'hui', body:'Fertilité maximale ! Votre corps libère un ovule. La probabilité de conception est la plus élevée de votre cycle.'});
+    }
+    if (now >= cur.fStart && now <= cur.fEnd) {
+      insights.push({type:'tip', icon:'🌿', title:'Vous êtes dans votre fenêtre fertile', body:'Les 5-6 jours précédant l\'ovulation sont fertiles. Les spermatozoïdes peuvent survivre jusqu\'à 5 jours dans les voies génitales.'});
+    }
+    if (dayIn >= 1 && dayIn <= pl) {
+      insights.push({type:'info', icon:'💆', title:'Conseil bien-être — Règles', body:'Pendant vos règles, privilégiez le repos, les aliments riches en fer (épinards, lentilles) et l\'hydratation. Évitez l\'alcool et la caféine.'});
+    }
+
+    const ovD = cl - 14;
+    if (dayIn > pl && dayIn < ovD - 5) {
+      insights.push({type:'tip', icon:'⚡', title:'Phase folliculaire — Énergie maximale', body:'Votre phase folliculaire est idéale pour l\'exercice intense, les projets créatifs et les nouvelles initiatives. Profitez de ce regain d\'énergie !'});
+    }
+    if (dayIn > ovD + 1) {
+      insights.push({type:'info', icon:'🌙', title:'Phase lutéale — Prenez soin de vous', body:'La progestérone monte. Vous pourriez ressentir plus de fatigue et de sensibilité. C\'est normal. Priorisez le sommeil et la détente.'});
+    }
+  }
+
+  // Cycle regularity insight
+  if (cl < 24 || cl > 35) {
+    insights.push({type:'warning', icon:'⚠️', title:'Cycle atypique', body:`Votre cycle de ${cl} jours sort des normes habituelles (25-35j). Si vous n'avez pas consulté de médecin, il pourrait être utile de le faire.`});
+  } else {
+    insights.push({type:'tip', icon:'✅', title:'Cycle régulier', body:`Votre cycle de ${cl} jours est dans la norme. La régularité est un bon signe de santé hormonale.`});
+  }
+
+  insights.push({type:'info', icon:'💧', title:'Rappel hydratation', body:'Boire 1.5–2L d\'eau par jour peut réduire les crampes et la fatigue liées au cycle. Ajoutez du citron pour le goût !'});
+
+  container.innerHTML = insights.map(i => `
+    <div class="insight-card ${i.type}">
+      <div class="insight-icon">${i.icon}</div>
+      <div class="insight-title">${i.title}</div>
+      <div class="insight-body">${i.body}</div>
+    </div>`).join('');
+
+  renderCycleStats();
+}
+
+function renderCycleStats() {
+  const el = document.getElementById('cycle-stats-body');
+  if (!state.cycles.length) { el.textContent = '—'; return; }
+  const totalCycles = state.cycles.length;
+  const now = today();
+  const pastCycles = state.cycles.filter(c => c.nextPeriod < now).length;
+  el.innerHTML = `
+    🔄 Durée du cycle : <strong>${state.cycleLength} jours</strong><br>
+    🩸 Durée des règles : <strong>${state.periodLength} jours</strong><br>
+    📅 Cycles calculés (année en cours) : <strong>${totalCycles}</strong><br>
+    ✅ Cycles passés : <strong>${pastCycles}</strong><br>
+    🔮 Cycles à venir : <strong>${totalCycles - pastCycles}</strong><br>
+    📊 Jours fertiles / cycle : <strong>6 jours</strong>
+  `;
+}
+
+// ═══════════════════════════════════════════
+//  JOURNAL
+// ═══════════════════════════════════════════
+let journalMood = null;
+let journalSymptoms = [];
+
+function setJournalMood(mood) {
+  journalMood = mood;
+  document.querySelectorAll('#journal-mood-grid .mood-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mood === mood);
+  });
+}
+
+function toggleSymptom(el, name) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) {
+    if (!journalSymptoms.includes(name)) journalSymptoms.push(name);
+  } else {
+    journalSymptoms = journalSymptoms.filter(s => s !== name);
+  }
+}
+
+function saveJournalEntry() {
+  const key = fmtISO(today());
+  const note = document.getElementById('journal-note').value;
+  if (!state.journal) state.journal = {};
+  state.journal[key] = {
+    mood: journalMood,
+    symptoms: [...journalSymptoms],
+    note,
+    date: key
+  };
+  saveLocal();
+  showToast('📓 Entrée enregistrée !');
+  if (state.autoSave && state.gdriveToken) syncGDrive(true);
+  renderJournal();
+}
+
+function renderJournal() {
+  // Load today's entry if exists
+  const key = fmtISO(today());
+  const entry = state.journal && state.journal[key];
+  if (entry) {
+    if (entry.mood) {
+      journalMood = entry.mood;
+      document.querySelectorAll('#journal-mood-grid .mood-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.mood === entry.mood);
+      });
+    }
+    if (entry.note) document.getElementById('journal-note').value = entry.note;
+    if (entry.symptoms) {
+      journalSymptoms = entry.symptoms;
+      document.querySelectorAll('.symptom-chip').forEach(el => {
+        const name = el.getAttribute('onclick').match(/'([^']+)'\)/)[1];
+        el.classList.toggle('selected', journalSymptoms.includes(name));
+      });
+    }
+  }
+
+  // Recent entries
+  const container = document.getElementById('recent-entries');
+  if (!state.journal || !Object.keys(state.journal).length) {
+    container.innerHTML = '<div style="font-size:.82rem;color:var(--muted);text-align:center;padding:12px">Aucune entrée pour le moment</div>';
+    return;
+  }
+  const sorted = Object.entries(state.journal).sort((a,b) => b[0].localeCompare(a[0])).slice(0,5);
+  container.innerHTML = sorted.map(([date, entry]) => `
+    <div style="padding:10px 0;border-bottom:1px solid rgba(255,107,157,.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:.8rem;font-weight:600">${new Date(date+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</span>
+        <span style="font-size:1.2rem">${entry.mood || '—'}</span>
+      </div>
+      ${entry.symptoms?.length ? `<div style="font-size:.73rem;color:var(--muted);margin-bottom:4px">${entry.symptoms.join(' • ')}</div>` : ''}
+      ${entry.note ? `<div style="font-size:.78rem;color:var(--text);font-style:italic">"${entry.note.slice(0,80)}${entry.note.length>80?'…':''}"</div>` : ''}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  MOOD QUICK LOG (DASHBOARD)
+// ═══════════════════════════════════════════
+function quickMood(mood) {
+  const key = fmtISO(today());
+  if (!state.journal) state.journal = {};
+  if (!state.journal[key]) state.journal[key] = {};
+  state.journal[key].mood = mood;
+  saveLocal();
+  document.querySelectorAll('#quick-mood-grid .mood-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mood === mood);
+  });
+  document.getElementById('quick-mood-saved').style.display = 'block';
+  setTimeout(() => document.getElementById('quick-mood-saved').style.display = 'none', 2000);
+}
+
+// ═══════════════════════════════════════════
+//  PILL TRACKER
+// ═══════════════════════════════════════════
+function loadPillsToday() {
+  const key = fmtISO(today());
+  const pills = (state.pillsToday && state.pillsToday[key]) || {};
+  ['pill-folate','pill-vitd','pill-mag'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn && pills[id]) { btn.classList.add('done'); btn.textContent = '✓'; }
+  });
+}
+
+function togglePill(id) {
+  const key = fmtISO(today());
+  if (!state.pillsToday) state.pillsToday = {};
+  if (!state.pillsToday[key]) state.pillsToday[key] = {};
+  state.pillsToday[key][id] = !state.pillsToday[key][id];
+  const btn = document.getElementById(id);
+  btn.classList.toggle('done', state.pillsToday[key][id]);
+  btn.textContent = state.pillsToday[key][id] ? '✓' : '○';
+  saveLocal();
 }
 
 // ═══════════════════════════════════════════
@@ -658,62 +1274,101 @@ function saveSettings() {
   computeAll(); renderAll();
   showToast('✅ Cycle calculé jusqu\'au 31 déc !');
   navigate('dashboard');
-  if (fbReady) syncFirebase(true);
+  if (state.autoSave && state.gdriveToken) syncGDrive(true);
+}
+
+function toggleDark() {
+  state.darkMode = !state.darkMode;
+  applyDarkMode();
+  saveLocal();
+  document.getElementById('toggle-dark').classList.toggle('on', state.darkMode);
+}
+function applyDarkMode() {
+  document.body.classList.toggle('dark', !!state.darkMode);
+  document.getElementById('toggle-dark').classList.toggle('on', !!state.darkMode);
+}
+function toggleNotif() {
+  state.notifEnabled = !state.notifEnabled;
+  document.getElementById('toggle-notif').classList.toggle('on', state.notifEnabled);
+  saveLocal();
+  showToast(state.notifEnabled ? '🔔 Notifications activées' : '🔕 Notifications désactivées');
+}
+function toggleAutosave() {
+  state.autoSave = !state.autoSave;
+  document.getElementById('toggle-autosave').classList.toggle('on', state.autoSave);
+  saveLocal();
+  showToast(state.autoSave ? '☁️ Sauvegarde auto activée' : '☁️ Sauvegarde auto désactivée');
+}
+function updateToggleUI() {
+  document.getElementById('toggle-dark').classList.toggle('on', !!state.darkMode);
+  document.getElementById('toggle-notif').classList.toggle('on', state.notifEnabled !== false);
+  document.getElementById('toggle-autosave').classList.toggle('on', state.autoSave !== false);
+}
+function resetApp() {
+  if (!confirm('Supprimer toutes les données Luna ? Cette action est irréversible.')) return;
+  localStorage.removeItem('luna_v3');
+  location.reload();
 }
 
 // ═══════════════════════════════════════════
-//  FIREBASE
+//  GOOGLE DRIVE
 // ═══════════════════════════════════════════
-function initFirebase(showMsg = true) {
-  const apiKey    = (document.getElementById('input-fb-apikey')?.value || state.fbApiKey || '').trim();
-  const projectId = (document.getElementById('input-fb-projectid')?.value || state.fbProjectId || '').trim();
-  if (!apiKey || !projectId) { updateFBStatus(false); return false; }
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const LUNA_FILENAME = 'luna-cycle-data.json';
+let tokenClient = null;
 
+function connectGDrive() {
+  const clientId = document.getElementById('input-gdrive-clientid').value.trim();
+  if (!clientId) { showToast('⚠️ Entrez votre Client ID Google'); return; }
+  state.gdriveClientId = clientId;
+  saveLocal();
+
+  if (!window.google || !window.google.accounts) {
+    // Load GIS dynamically
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.onload = () => initGDriveAuth(clientId);
+    script.onerror = () => showToast('❌ Impossible de charger Google Auth');
+    document.head.appendChild(script);
+  } else {
+    initGDriveAuth(clientId);
+  }
+}
+
+function initGDriveAuth(clientId) {
   try {
-    // Delete existing app if reconfiguring
-    if (fbApp) { try { firebase.app().delete(); } catch(e){} }
-
-    fbApp = firebase.initializeApp({
-      apiKey,
-      authDomain: `${projectId}.firebaseapp.com`,
-      projectId
-    }, 'luna-' + Date.now());
-
-    fbDB = firebase.firestore(fbApp);
-    fbReady = true;
-    state.fbApiKey = apiKey;
-    state.fbProjectId = projectId;
-    saveLocal();
-    updateFBStatus(true);
-    if (showMsg) showToast('🔥 Firebase connecté !');
-    return true;
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: GDRIVE_SCOPES,
+      callback: (tokenResponse) => {
+        if (tokenResponse.error) {
+          showToast('❌ Erreur auth : ' + tokenResponse.error);
+          updateDriveStatus(false, true);
+          return;
+        }
+        state.gdriveToken = tokenResponse.access_token;
+        state.gdriveConnected = true;
+        saveLocal();
+        updateDriveStatus(true);
+        showToast('✅ Google Drive connecté !');
+        // Auto-restore after connect
+        restoreGDrive(true);
+      }
+    });
+    tokenClient.requestAccessToken();
   } catch(e) {
-    fbReady = false;
-    updateFBStatus(false, true);
-    if (showMsg) showToast('❌ Erreur Firebase : ' + e.message);
-    return false;
+    showToast('❌ Erreur Google Auth : ' + e.message);
   }
 }
 
-function connectFirebase() {
-  initFirebase(true);
-}
-
-async function syncFirebase(silent = false) {
-  if (!fbReady && !initFirebase(false)) {
-    if (!silent) showToast('⚠️ Configurez Firebase d\'abord');
-    return;
-  }
-  if (!state.cycles.length) { if (!silent) showToast('⚠️ Calculez votre cycle d\'abord'); return; }
-
-  setBtnSpinning(true);
-  if (!silent) showToast('☁️ Sauvegarde en cours…');
-
-  const payload = {
+function buildPayload() {
+  return {
     lastPeriod:   state.lastPeriod,
     cycleLength:  state.cycleLength,
     periodLength: state.periodLength,
     updatedAt:    new Date().toISOString(),
+    journal:      state.journal || {},
+    calNotes:     state.calNotes || {},
     cycles: state.cycles.map(c => ({
       idx:          c.idx,
       periodStart:  fmtISO(c.periodStart),
@@ -724,98 +1379,227 @@ async function syncFirebase(silent = false) {
       nextPeriod:   fmtISO(c.nextPeriod)
     }))
   };
+}
+
+async function syncGDrive(silent = false) {
+  if (!state.gdriveToken) {
+    if (!silent) showToast('⚠️ Connectez Google Drive d\'abord');
+    return;
+  }
+  if (!state.cycles.length) { if (!silent) showToast('⚠️ Calculez votre cycle d\'abord'); return; }
+  if (!silent) setBtnSpinning(true);
+
+  const payload = JSON.stringify(buildPayload(), null, 2);
+  const blob = new Blob([payload], {type:'application/json'});
 
   try {
-    await fbDB.collection('luna').doc('cycle').set(payload);
+    let fileId = state.gdriveFileId;
+
+    if (!fileId) {
+      // Search existing file
+      const search = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${LUNA_FILENAME}'+and+trashed=false&fields=files(id,name,modifiedTime)`, {
+        headers: { Authorization: `Bearer ${state.gdriveToken}` }
+      });
+      if (search.ok) {
+        const data = await search.json();
+        if (data.files && data.files.length) fileId = data.files[0].id;
+      }
+    }
+
+    let response;
+    if (fileId) {
+      // Update existing
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({name: LUNA_FILENAME})], {type:'application/json'}));
+      form.append('file', blob);
+      response = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${state.gdriveToken}` },
+        body: form
+      });
+    } else {
+      // Create new
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({name: LUNA_FILENAME, mimeType:'application/json'})], {type:'application/json'}));
+      form.append('file', blob);
+      response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${state.gdriveToken}` },
+        body: form
+      });
+    }
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'Erreur Drive');
+    }
+
+    const result = await response.json();
+    state.gdriveFileId = result.id;
+    state.lastAutoSave = new Date().toISOString();
+
+    // Add to backup history
+    if (!state.backupHistory) state.backupHistory = [];
+    state.backupHistory.unshift({
+      name: LUNA_FILENAME,
+      fileId: result.id,
+      date: new Date().toISOString(),
+      cycles: state.cycles.length
+    });
+    state.backupHistory = state.backupHistory.slice(0, 20);
+
+    saveLocal();
     setBtnSpinning(false);
-    if (!silent) showToast('✅ Sauvegardé dans Firebase !');
-    updateFBStatus(true, false, new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+    const timeStr = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    if (!silent) showToast('✅ Sauvegardé sur Google Drive !');
+    updateDriveStatus(true, false, timeStr);
   } catch(e) {
     setBtnSpinning(false);
-    showToast('❌ Erreur : ' + e.message);
-    updateFBStatus(false, true);
+    if (!silent) showToast('❌ Erreur Drive : ' + e.message);
+    if (e.message.includes('401') || e.message.includes('Invalid Credentials')) {
+      state.gdriveToken = null;
+      updateDriveStatus(false, true);
+    }
   }
 }
 
-async function restoreFirebase() {
-  if (!fbReady && !initFirebase(false)) { showToast('⚠️ Configurez Firebase d\'abord'); return; }
-  setBtnSpinning(true);
-  showToast('📥 Restauration en cours…');
+async function restoreGDrive(silent = false) {
+  if (!state.gdriveToken) {
+    if (!silent) showToast('⚠️ Connectez Google Drive d\'abord');
+    return;
+  }
+  if (!silent) { setBtnSpinning(true); showToast('📥 Restauration en cours…'); }
+
   try {
-    const doc = await fbDB.collection('luna').doc('cycle').get();
-    if (!doc.exists) { setBtnSpinning(false); showToast('ℹ️ Aucune donnée dans le cloud'); return; }
-    const d = doc.data();
+    // Find file
+    let fileId = state.gdriveFileId;
+    if (!fileId) {
+      const search = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${LUNA_FILENAME}'+and+trashed=false&fields=files(id,name)`, {
+        headers: { Authorization: `Bearer ${state.gdriveToken}` }
+      });
+      if (search.ok) {
+        const data = await search.json();
+        if (data.files && data.files.length) fileId = data.files[0].id;
+      }
+    }
+
+    if (!fileId) {
+      setBtnSpinning(false);
+      if (!silent) showToast('ℹ️ Aucune sauvegarde trouvée sur Drive');
+      return;
+    }
+
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+      headers: { Authorization: `Bearer ${state.gdriveToken}` }
+    });
+    if (!resp.ok) throw new Error('Fichier inaccessible');
+
+    const d = await resp.json();
     state.lastPeriod   = d.lastPeriod;
     state.cycleLength  = d.cycleLength;
     state.periodLength = d.periodLength;
+    if (d.journal) state.journal = d.journal;
+    if (d.calNotes) state.calNotes = d.calNotes;
+    state.gdriveFileId = fileId;
+
     document.getElementById('input-last-period').value = state.lastPeriod;
     document.getElementById('input-cycle-length').value = state.cycleLength;
     document.getElementById('input-period-length').value = state.periodLength;
+
     computeAll(); renderAll();
     saveLocal();
     setBtnSpinning(false);
-    showToast('✅ Données restaurées depuis le cloud !');
+    if (!silent) showToast('✅ Données restaurées depuis Google Drive !');
+    updateDriveStatus(true, false, new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
   } catch(e) {
     setBtnSpinning(false);
-    showToast('❌ Erreur restauration : ' + e.message);
+    if (!silent) showToast('❌ Erreur restauration : ' + e.message);
   }
 }
 
-async function quickSync() {
-  if (fbReady) await syncFirebase(false);
-  else { showToast('⚠️ Firebase non connecté'); navigate('settings'); }
+async function quickSyncDrive() {
+  if (state.gdriveToken && state.gdriveConnected) await syncGDrive(false);
+  else { showToast('⚠️ Google Drive non connecté'); navigate('settings'); }
 }
 
-function updateFBStatus(connected, error = false, time = null) {
-  const bar  = document.getElementById('fb-status-card');
-  const dot  = document.getElementById('fb-dot');
-  const txt  = document.getElementById('fb-status-text');
+function updateDriveStatus(connected, error = false, time = null) {
+  const bar  = document.getElementById('gdrive-status-card');
+  const dot  = document.getElementById('gdrive-dot');
+  const txt  = document.getElementById('gdrive-status-text');
   const dash = document.getElementById('cloud-status-dash');
   const ddot = document.getElementById('cloud-dot-dash');
   const dtxt = document.getElementById('cloud-text-dash');
 
   if (error) {
     bar.className = 'cloud-bar error'; dot.className = 'cloud-dot dot-error';
-    txt.textContent = '❌ Erreur de connexion Firebase';
+    txt.textContent = '❌ Erreur de connexion Google Drive';
     dash.className = 'cloud-bar error'; ddot.className = 'cloud-dot dot-error';
-    dtxt.textContent = '❌ Erreur Firebase — Vérifiez vos clés';
+    dtxt.textContent = '❌ Erreur Drive — Reconnectez-vous';
   } else if (connected) {
     bar.className = 'cloud-bar ok'; dot.className = 'cloud-dot dot-ok';
-    txt.textContent = time ? `✅ Synchronisé à ${time}` : '✅ Connecté à Firebase';
+    txt.textContent = time ? `✅ Synchronisé à ${time}` : '✅ Connecté à Google Drive';
     dash.className = 'cloud-bar ok'; ddot.className = 'cloud-dot dot-ok';
-    dtxt.textContent = time ? `☁️ Dernière sync : ${time}` : '☁️ Firebase connecté';
+    dtxt.textContent = time ? `☁️ Drive — Dernière sync : ${time}` : '☁️ Google Drive connecté';
   } else {
     bar.className = 'cloud-bar warn'; dot.className = 'cloud-dot dot-warn';
-    txt.textContent = 'Non connecté — Entrez vos clés Firebase ci-dessous';
+    txt.textContent = 'Non connecté — Entrez votre Client ID ci-dessous';
     dash.className = 'cloud-bar warn'; ddot.className = 'cloud-dot dot-warn';
-    dtxt.textContent = '☁️ Firebase non connecté — Appuyez pour configurer';
+    dtxt.textContent = '☁️ Google Drive non connecté — Appuyez pour configurer';
+  }
+
+  if (connected) {
+    document.getElementById('sync-btn').title = 'Synchroniser Google Drive';
   }
 }
 
-function setBtnSpinning(on) {
-  const btn = document.getElementById('sync-btn');
-  if (on) btn.classList.add('spinning'); else btn.classList.remove('spinning');
+// ═══════════════════════════════════════════
+//  BACKUP LIST MODAL
+// ═══════════════════════════════════════════
+function showBackupList() {
+  openModal('📋 Sauvegardes Drive', buildBackupListHTML());
+}
+
+function buildBackupListHTML() {
+  if (!state.backupHistory || !state.backupHistory.length) {
+    return '<div style="text-align:center;color:var(--muted);font-size:.85rem;padding:20px">Aucune sauvegarde pour le moment.<br>Connectez Google Drive et sauvegardez vos données.</div>';
+  }
+  return state.backupHistory.map((b, i) => `
+    <div class="backup-item">
+      <div class="backup-info">
+        <div class="backup-name">💾 ${b.name}</div>
+        <div class="backup-date">${new Date(b.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})} • ${b.cycles} cycles</div>
+      </div>
+      <div class="backup-actions">
+        <button class="backup-btn backup-restore" onclick="restoreFromHistory(${i})">↩ Restaurer</button>
+      </div>
+    </div>`).join('');
+}
+
+async function restoreFromHistory(idx) {
+  closeModal();
+  showToast('📥 Restauration en cours…');
+  await restoreGDrive(false);
+}
+
+// ═══════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════
+function openModal(title, body) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
 }
 
 // ═══════════════════════════════════════════
 //  EXPORT / IMPORT JSON
 // ═══════════════════════════════════════════
 function exportJSON() {
-  const data = {
-    lastPeriod: state.lastPeriod,
-    cycleLength: state.cycleLength,
-    periodLength: state.periodLength,
-    exportDate: new Date().toISOString(),
-    cycles: state.cycles.map(c => ({
-      idx: c.idx,
-      periodStart: fmtISO(c.periodStart),
-      periodEnd: fmtISO(c.periodEnd),
-      fertileStart: fmtISO(c.fStart),
-      ovulation: fmtISO(c.ovulation),
-      fertileEnd: fmtISO(c.fEnd),
-      nextPeriod: fmtISO(c.nextPeriod)
-    }))
-  };
+  const data = buildPayload();
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -833,6 +1617,8 @@ function importJSON(e) {
       state.lastPeriod   = d.lastPeriod;
       state.cycleLength  = d.cycleLength;
       state.periodLength = d.periodLength;
+      if (d.journal) state.journal = d.journal;
+      if (d.calNotes) state.calNotes = d.calNotes;
       document.getElementById('input-last-period').value  = state.lastPeriod;
       document.getElementById('input-cycle-length').value = state.cycleLength;
       document.getElementById('input-period-length').value= state.periodLength;
@@ -841,6 +1627,14 @@ function importJSON(e) {
     } catch(err) { showToast('❌ Fichier invalide'); }
   };
   reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════
+//  SYNC BTN SPINNER
+// ═══════════════════════════════════════════
+function setBtnSpinning(on) {
+  const btn = document.getElementById('sync-btn');
+  if (on) btn.classList.add('spinning'); else btn.classList.remove('spinning');
 }
 
 // ═══════════════════════════════════════════
