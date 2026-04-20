@@ -1587,11 +1587,11 @@ function printTable() {
     let tips = [];
     if (cl >= 25 && cl <= 35) tips.push('✅ <strong>Cycle régulier :</strong> Votre cycle de ' + cl + ' jours est dans la plage normale (25–35j).');
     else tips.push('⚠️ <strong>Cycle atypique :</strong> Votre cycle de ' + cl + ' jours sort des normes (25–35j). Une consultation médicale peut être utile.');
-    tips.push('💧 <strong>Hydratation :</strong> Boire 1,5 à 2L d'eau par jour peut réduire les crampes et la fatigue.');
-    tips.push('🌿 <strong>Phase fertile :</strong> La fertilité est maximale les 5 jours avant l'ovulation et le jour J.');
-    tips.push('💆 <strong>Phase de règles :</strong> Privilégiez le repos, les aliments riches en fer et l'hydratation.');
-    tips.push('⚡ <strong>Phase folliculaire :</strong> Période idéale pour l'exercice intense et les nouvelles initiatives.');
-    tips.push('🌙 <strong>Phase lutéale :</strong> La progestérone augmente. Priorisez le sommeil et les activités douces.');
+    tips.push("💧 <strong>Hydratation :</strong> Boire 1,5 à 2L d'eau par jour peut réduire les crampes et la fatigue.");
+    tips.push("🌿 <strong>Phase fertile :</strong> La fertilité est maximale les 5 jours avant l'ovulation et le jour J.");
+    tips.push("💆 <strong>Phase de règles :</strong> Privilégiez le repos, les aliments riches en fer et l'hydratation.");
+    tips.push("⚡ <strong>Phase folliculaire :</strong> Période idéale pour l'exercice intense et les nouvelles initiatives.");
+    tips.push("🌙 <strong>Phase lutéale :</strong> La progestérone augmente. Priorisez le sommeil et les activités douces.");
     document.getElementById('print-insights-body').innerHTML = tips.map(function(t){return '<div style="margin-bottom:6px;padding:6px 10px;background:#fff5f9;border-radius:6px">'+t+'</div>';}).join('');
     document.getElementById('print-insights').style.display = 'block';
   }
