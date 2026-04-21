@@ -2267,40 +2267,19 @@ function printTable() {
   ].join(';');
 
   wrap.innerHTML = `
-    <!-- COVER HEADER -->
-    <div style="display:flex;align-items:center;gap:16px;border-bottom:3px solid #e0407a;padding-bottom:16px;margin-bottom:20px">
-      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">🌙</div>
-      <div style="flex:1">
-        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#e0407a;line-height:1.1">Luna — Calendrier annuel du cycle</div>
-        <div style="font-size:.75rem;color:#9b7ea4;margin-top:2px">Généré le ${genDate} • ${state.cycles.length} cycles calculés</div>
-      </div>
-      <div style="text-align:right;font-size:.75rem;color:#9b7ea4">
-        <div>Cycle : <strong style="color:#2d1033">${cl} jours</strong></div>
-        <div>Règles : <strong style="color:#2d1033">${state.periodLength} jours</strong></div>
-      </div>
+    <!-- ══ LOGO & EN-TÊTE ══ -->
+    <div style="text-align:center;padding:36px 0 28px;background:linear-gradient(160deg,#fff0f8 0%,#ffd6e7 50%,#e8c8f8 100%);border-radius:16px;margin-bottom:28px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.2)"></div>
+      <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15)"></div>
+      <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:inline-flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:12px;box-shadow:0 8px 24px rgba(255,107,157,.35)">🌙</div>
+      <div style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:700;background:linear-gradient(135deg,#e0407a,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px">Luna</div>
+      <div style="font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:#9b7ea4;margin-bottom:16px">Suivi de Cycle Féminin</div>
+      <div style="width:50px;height:3px;background:linear-gradient(90deg,#ff6b9d,#c084fc);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#2d1033;margin-bottom:4px">Calendrier annuel du cycle</div>
+      <div style="font-size:.72rem;color:#9b7ea4">Généré le ${genDate} • Cycle de ${cl} jours • ${state.cycles.length} cycles calculés</div>
     </div>
 
-    <!-- SUMMARY ROW -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
-      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
-        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Phase actuelle</div>
-        <div style="font-size:.82rem;font-weight:600">${phaseStr}</div>
-      </div>
-      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
-        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Prochaines règles</div>
-        <div style="font-size:.82rem;font-weight:600">${daysToNext !== null ? 'Dans ' + daysToNext + ' jour' + (daysToNext>1?'s':'') : '—'}</div>
-      </div>
-      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
-        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Cycles passés</div>
-        <div style="font-size:.82rem;font-weight:600">${pastCycles}</div>
-      </div>
-      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
-        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Cycles à venir</div>
-        <div style="font-size:.82rem;font-weight:600">${futureCycles}</div>
-      </div>
-    </div>
-
-    <!-- TABLE -->
+    <!-- ══ TABLEAU ══ -->
     <table style="width:100%;border-collapse:collapse;font-size:.8rem">
       <thead>
         <tr style="background:linear-gradient(135deg,#e0407a,#c084fc)">
@@ -2316,9 +2295,52 @@ function printTable() {
       <tbody>${rows}</tbody>
     </table>
 
-    <!-- DISCLAIMER -->
-    <div style="margin-top:20px;padding:10px 14px;background:#fff8f0;border-left:3px solid #f97316;border-radius:0 8px 8px 0;font-size:.68rem;color:#7c4a00;line-height:1.6">
-      ⚠️ <strong>Avertissement :</strong> Luna est un outil de suivi informatif uniquement. Ces données ne constituent pas un avis médical.
+    <!-- ══ RÉSUMÉ APRÈS TABLEAU ══ -->
+    <div style="margin-top:24px;padding:20px;background:#fff5f9;border-radius:14px;border:1px solid #ffd6e7">
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#2d1033;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <span style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0">📋</span>
+        Résumé du cycle
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #ffd6e7">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Phase actuelle</div>
+          <div style="font-size:.85rem;font-weight:600;color:#2d1033">${phaseStr}</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #ffd6e7">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Prochaines règles</div>
+          <div style="font-size:.85rem;font-weight:600;color:#2d1033">${daysToNext !== null ? 'Dans ' + daysToNext + ' jour' + (daysToNext>1?'s':'') + ' (' + fmtDate(nextPeriod) + ')' : '—'}</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #ffd6e7">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Ovulation estimée</div>
+          <div style="font-size:.85rem;font-weight:600;color:#2d1033">Jour ${ovDay} de chaque cycle</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #ffd6e7">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Fenêtre fertile</div>
+          <div style="font-size:.85rem;font-weight:600;color:#2d1033">6 jours (J${ovDay-5} → J${ovDay+1})</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #ffd6e7">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Cycles passés</div>
+          <div style="font-size:.85rem;font-weight:600;color:#2d1033">${pastCycles}</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #ffd6e7">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Cycles à venir</div>
+          <div style="font-size:.85rem;font-weight:600;color:#2d1033">${futureCycles}</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid #ffd6e7;padding-top:12px">
+        <div style="font-size:.72rem;font-weight:600;color:#2d1033;margin-bottom:8px">✨ Conseils par phase</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:.68rem;color:#4a1942;line-height:1.6">
+          <div style="padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid #ff6b9d">🩸 <strong>Règles :</strong> Repos, fer, hydratation</div>
+          <div style="padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid #93c5fd">💙 <strong>Folliculaire :</strong> Énergie, nouveaux projets</div>
+          <div style="padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid #6ee7b7">🌿 <strong>Fertile :</strong> Vitalité maximale, connexion</div>
+          <div style="padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid #c084fc">💜 <strong>Lutéale :</strong> Sommeil, douceur, magnésium</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DISCLAIMER ══ -->
+    <div style="margin-top:16px;padding:10px 14px;background:#fff8f0;border-left:3px solid #f97316;border-radius:0 8px 8px 0;font-size:.68rem;color:#7c4a00;line-height:1.6">
+      ⚠️ <strong>Avertissement :</strong> Luna est un outil de suivi informatif uniquement. Ces données ne constituent pas un avis médical. Consultez votre médecin en cas de doute ou d'irrégularités.
     </div>`;
 
   document.body.appendChild(wrap);
