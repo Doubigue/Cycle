@@ -2187,49 +2187,194 @@ function exportCalendarPDF() {
 }
 
 function printTable() {
-  const _printDate = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  document.getElementById('print-date').textContent = _printDate;
-  document.getElementById('print-cover-date').textContent = _printDate;
-  document.getElementById('print-cover-year').textContent = new Date().getFullYear();
-  if (state.cycles.length) {
-    const now = today(), pastCycles = state.cycles.filter(c => c.nextPeriod < now).length;
-    const futureCycles = state.cycles.filter(c => c.periodStart > now).length;
-    let cur = state.cycles.find(c => now >= c.periodStart && now < c.nextPeriod);
-    const nextPeriod = cur ? cur.nextPeriod : state.cycles.find(c => c.periodStart > now)?.periodStart;
-    const daysToNext = nextPeriod ? diffDays(now, nextPeriod) : null;
-    const summaryEl = document.getElementById('print-summary-body');
-    const ovDay = +state.cycleLength - 14;
-    summaryEl.innerHTML =
-      '<div>🩸 <strong>Dernières règles :</strong> ' + fmtDateFull(new Date(state.lastPeriod)) + '</div>' +
-      '<div>🔄 <strong>Durée du cycle :</strong> ' + state.cycleLength + ' jours &nbsp;|&nbsp; 🩸 <strong>Durée des règles :</strong> ' + state.periodLength + ' jours</div>' +
-      '<div>📅 <strong>Cycles calculés :</strong> ' + state.cycles.length + ' (' + pastCycles + ' passés · ' + futureCycles + ' à venir)</div>' +
-      '<div>🌿 <strong>Jours fertiles / cycle :</strong> 6 jours (J' + (ovDay-5) + ' à J' + (ovDay+1) + ')</div>' +
-      '<div>🥚 <strong>Ovulation estimée :</strong> Jour ' + ovDay + ' de chaque cycle</div>' +
-      (daysToNext !== null ? '<div>⏳ <strong>Prochaines règles :</strong> ' + fmtDateFull(nextPeriod) + ' (dans ' + daysToNext + ' jour' + (daysToNext>1?'s':'') + ')</div>' : '') +
-      (cur ? '<div>📍 <strong>Phase actuelle :</strong> ' + (
-        now<=cur.periodEnd ? 'Menstruation 🩸' :
-        now>=cur.fStart&&now<=cur.fEnd ? 'Fenêtre fertile 🌿' :
-        fmtISO(now)===fmtISO(cur.ovulation) ? 'Ovulation 🥚' :
-        now<cur.fStart ? 'Phase folliculaire 💙' : 'Phase lutéale 💜'
-      ) + ' — Jour ' + (diffDays(cur.periodStart,now)+1) + ' sur ' + state.cycleLength + '</div>' : '');
-    document.getElementById('print-summary').style.display = 'block';
-    const cl = +state.cycleLength;
-    let tips = [];
-    if (cl >= 25 && cl <= 35) tips.push('✅ <strong>Cycle régulier :</strong> Votre cycle de ' + cl + ' jours est dans la plage normale (25–35j).');
-    else tips.push('⚠️ <strong>Cycle atypique :</strong> Votre cycle de ' + cl + ' jours sort des normes (25–35j). Une consultation médicale peut être utile.');
-    tips.push("💧 <strong>Hydratation :</strong> Boire 1,5 à 2L d'eau par jour peut réduire les crampes et la fatigue.");
-    tips.push("🌿 <strong>Phase fertile :</strong> La fertilité est maximale les 5 jours avant l'ovulation et le jour J.");
-    tips.push("💆 <strong>Phase de règles :</strong> Privilégiez le repos, les aliments riches en fer et l'hydratation.");
-    tips.push("⚡ <strong>Phase folliculaire :</strong> Période idéale pour l'exercice intense et les nouvelles initiatives.");
-    tips.push("🌙 <strong>Phase lutéale :</strong> La progestérone augmente. Priorisez le sommeil et les activités douces.");
-    document.getElementById('print-insights-body').innerHTML = tips.map(function(t){return '<div style="margin-bottom:6px;padding:6px 10px;background:#fff5f9;border-radius:6px">'+t+'</div>';}).join('');
-    document.getElementById('print-insights').style.display = 'block';
+  if (!state.cycles.length) { showToast('⚠️ Calculez votre cycle d\'abord'); return; }
+  showToast('📸 Génération du PDF tableau…');
+
+  const now = today();
+  const genDate = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const pastCycles   = state.cycles.filter(c => c.nextPeriod < now).length;
+  const futureCycles = state.cycles.filter(c => c.periodStart > now).length;
+  const cur          = state.cycles.find(c => now >= c.periodStart && now < c.nextPeriod);
+  const nextPeriod   = cur ? cur.nextPeriod : state.cycles.find(c => c.periodStart > now)?.periodStart;
+  const daysToNext   = nextPeriod ? diffDays(now, nextPeriod) : null;
+  const ovDay        = +state.cycleLength - 14;
+  const cl           = +state.cycleLength;
+
+  // Phase actuelle
+  let phaseStr = '—';
+  if (cur) {
+    if      (now <= cur.periodEnd)                          phaseStr = 'Menstruation 🩸';
+    else if (fmtISO(now) === fmtISO(cur.ovulation))        phaseStr = 'Ovulation 🥚';
+    else if (now >= cur.fStart && now <= cur.fEnd)          phaseStr = 'Fenêtre fertile 🌿';
+    else if (now < cur.fStart)                              phaseStr = 'Phase folliculaire 💙';
+    else                                                    phaseStr = 'Phase lutéale 💜';
+    phaseStr += ' — Jour ' + (diffDays(cur.periodStart,now)+1) + ' / ' + cl;
   }
-  window.print();
-  setTimeout(function(){
-    document.getElementById('print-summary').style.display = 'none';
-    document.getElementById('print-insights').style.display = 'none';
-  }, 1000);
+
+  // Badge HTML helper
+  const badge = (type, text) => {
+    const styles = {
+      period:      'background:#ffd6e7;color:#c0215a',
+      fertile:     'background:#d1fae5;color:#065f46',
+      ovulation:   'background:#fde68a;color:#92400e',
+      follicular:  'background:#dbeafe;color:#1e40af',
+      luteal:      'background:#ede9fe;color:#5b21b6',
+      past:        'background:#f3f4f6;color:#6b7280',
+      future:      'background:#dbeafe;color:#1e40af',
+    };
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:600;${styles[type]||''}">${text}</span>`;
+  };
+
+  // Build table rows
+  const rows = state.cycles.map(c => {
+    const isCurrent = now >= c.periodStart && now < c.nextPeriod;
+    const isPast    = c.nextPeriod < now;
+    let phaseCell;
+    if (isPast) {
+      phaseCell = badge('past','Passé');
+    } else if (isCurrent) {
+      if      (now <= c.periodEnd)                        phaseCell = badge('period','🩸 Règles');
+      else if (now >= c.fStart && now <= c.fEnd)          phaseCell = badge('fertile','🌿 Fertile');
+      else if (now < c.fStart)                            phaseCell = badge('follicular','💙 Folliculaire');
+      else                                                phaseCell = badge('luteal','💜 Lutéale');
+    } else {
+      phaseCell = badge('future','À venir');
+    }
+    const rowBg = isCurrent ? 'background:#fff0f5' : (isPast ? 'background:#fafafa' : '');
+    return `<tr style="${rowBg}">
+      <td style="font-weight:700;color:#e0407a">#${c.idx}</td>
+      <td>${fmtDate(c.periodStart)}</td>
+      <td>${fmtDate(c.periodEnd)}</td>
+      <td>${fmtDate(c.fStart)}</td>
+      <td style="font-weight:700;color:#f97316">${fmtDate(c.ovulation)}</td>
+      <td>${fmtDate(c.fEnd)}</td>
+      <td>${phaseCell}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Build off-screen render container ──
+  const wrap = document.createElement('div');
+  wrap.style.cssText = [
+    'position:fixed','top:-99999px','left:0',
+    'width:1060px',   // A4 portrait ~125dpi
+    'background:#ffffff',
+    'padding:32px 36px',
+    'font-family:"DM Sans",sans-serif',
+    'color:#2d1033',
+    'box-sizing:border-box',
+    'font-size:13px',
+    'line-height:1.5'
+  ].join(';');
+
+  wrap.innerHTML = `
+    <!-- COVER HEADER -->
+    <div style="display:flex;align-items:center;gap:16px;border-bottom:3px solid #e0407a;padding-bottom:16px;margin-bottom:20px">
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">🌙</div>
+      <div style="flex:1">
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#e0407a;line-height:1.1">Luna — Calendrier annuel du cycle</div>
+        <div style="font-size:.75rem;color:#9b7ea4;margin-top:2px">Généré le ${genDate} • ${state.cycles.length} cycles calculés</div>
+      </div>
+      <div style="text-align:right;font-size:.75rem;color:#9b7ea4">
+        <div>Cycle : <strong style="color:#2d1033">${cl} jours</strong></div>
+        <div>Règles : <strong style="color:#2d1033">${state.periodLength} jours</strong></div>
+      </div>
+    </div>
+
+    <!-- SUMMARY ROW -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Phase actuelle</div>
+        <div style="font-size:.82rem;font-weight:600">${phaseStr}</div>
+      </div>
+      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Prochaines règles</div>
+        <div style="font-size:.82rem;font-weight:600">${daysToNext !== null ? 'Dans ' + daysToNext + ' jour' + (daysToNext>1?'s':'') : '—'}</div>
+      </div>
+      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Cycles passés</div>
+        <div style="font-size:.82rem;font-weight:600">${pastCycles}</div>
+      </div>
+      <div style="background:#fff5f9;border-radius:10px;padding:10px 12px;border:1px solid #ffd6e7">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9b7ea4;margin-bottom:3px">Cycles à venir</div>
+        <div style="font-size:.82rem;font-weight:600">${futureCycles}</div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#e0407a,#c084fc)">
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">#</th>
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Début règles</th>
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Fin règles</th>
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Fertile ↑</th>
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Ovulation 🥚</th>
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Fertile ↓</th>
+          <th style="padding:10px 10px;text-align:left;color:#fff;font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Phase</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <!-- DISCLAIMER -->
+    <div style="margin-top:20px;padding:10px 14px;background:#fff8f0;border-left:3px solid #f97316;border-radius:0 8px 8px 0;font-size:.68rem;color:#7c4a00;line-height:1.6">
+      ⚠️ <strong>Avertissement :</strong> Luna est un outil de suivi informatif uniquement. Ces données ne constituent pas un avis médical.
+    </div>`;
+
+  document.body.appendChild(wrap);
+
+  const { jsPDF } = window.jspdf;
+
+  setTimeout(() => {
+    html2canvas(wrap, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width:  wrap.offsetWidth,
+      height: wrap.offsetHeight,
+      windowWidth: wrap.offsetWidth
+    }).then(canvas => {
+      document.body.removeChild(wrap);
+
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+
+      // A4 portrait: 210 × 297 mm
+      const A4_W = 210, A4_H = 297;
+      const margin = 10;
+      const contentW  = A4_W - margin * 2;
+      const contentH  = A4_H - margin * 2;
+      const scale     = contentW / (imgW / 2);
+      const totalH_mm = (imgH / 2) * scale;
+      const numPages  = Math.ceil(totalH_mm / contentH);
+
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      for (let p = 0; p < numPages; p++) {
+        if (p > 0) pdf.addPage();
+
+        const srcY = Math.round((p * contentH / scale) * 2);
+        const srcH = Math.min(Math.round((contentH / scale) * 2), canvas.height - srcY);
+        if (srcH <= 0) break;
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width  = imgW;
+        pageCanvas.height = srcH;
+        pageCanvas.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcH, 0, 0, imgW, srcH);
+
+        const pageImgH = (srcH / 2) * scale;
+        pdf.addImage(pageCanvas.toDataURL('image/jpeg', 0.93), 'JPEG', margin, margin, contentW, pageImgH);
+      }
+
+      pdf.save('luna-tableau-cycles-' + fmtISO(today()) + '.pdf');
+      showToast('✅ Tableau PDF téléchargé !');
+
+    }).catch(err => {
+      document.body.removeChild(wrap);
+      showToast('❌ Erreur : ' + err.message);
+    });
+  }, 100);
 }
 
 /* ═══════════════════════════════════════════════
