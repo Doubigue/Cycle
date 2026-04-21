@@ -295,12 +295,18 @@ body.pdf-calendar-mode #page-table,
 body.pdf-calendar-mode #page-insights,
 body.pdf-calendar-mode #page-journal,
 body.pdf-calendar-mode #page-settings,
+body.pdf-calendar-mode #page-partner,
 body.pdf-calendar-mode .cal-nav-btn,
 body.pdf-calendar-mode .mini-cal-header { display:none !important }
 body.pdf-calendar-mode #page-calendar { display:block !important }
 body.pdf-calendar-mode #pdf-all-calendars { display:block !important }
-body.pdf-calendar-mode header { padding:12px 0 6px !important }
-body.pdf-calendar-mode .logo { -webkit-text-fill-color:#e0407a !important; color:#e0407a !important }
+body.pdf-calendar-mode header { display:none !important }
+body.pdf-calendar-mode #app {
+  max-width:100% !important; width:100% !important;
+  padding:0 !important; opacity:1 !important; pointer-events:all !important;
+  position:static !important;
+}
+body.pdf-calendar-mode #page-calendar { padding:0 !important; }
 body.pdf-calendar-mode .card { page-break-inside:avoid }
 
 /* Disclaimer commun aux deux modes PDF */
@@ -328,20 +334,52 @@ body.pdf-calendar-mode #pdf-disclaimer { display:block !important }
   body.pdf-calendar-mode .stat-card { border:1px solid #f0dce8 !important; box-shadow:none !important }
   body.pdf-dashboard-mode .card,
   body.pdf-calendar-mode .card { box-shadow:none !important; border:1px solid #f0dce8 !important }
-  body.pdf-calendar-mode .pdf-cal-month { page-break-inside:avoid; margin-bottom:24px }
+  /* ── Calendrier annuel ── */
+  body.pdf-calendar-mode #app {
+    max-width:100% !important; width:100% !important;
+    padding:0 !important; opacity:1 !important;
+    position:static !important;
+  }
+  body.pdf-calendar-mode #pdf-all-calendars {
+    display:block !important;
+    width:100% !important;
+  }
+  /* Grille : 3 mois par ligne sur A4 paysage, 2 en portrait */
+  body.pdf-calendar-mode .pdf-cal-months-grid {
+    display:grid !important;
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:12px !important;
+    width:100% !important;
+  }
+  body.pdf-calendar-mode .pdf-cal-month {
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+    margin-bottom:0 !important;
+    border:1px solid #f0dce8 !important;
+    border-radius:8px !important;
+    padding:8px !important;
+    background:#fff !important;
+  }
   body.pdf-calendar-mode .pdf-cal-grid {
-    display:grid; grid-template-columns:repeat(7,1fr);
-    gap:2px; margin-top:8px;
+    display:grid !important;
+    grid-template-columns:repeat(7,1fr) !important;
+    gap:1px !important;
+    margin-top:5px !important;
   }
   body.pdf-calendar-mode .pdf-cal-day {
-    text-align:center; padding:4px 2px; font-size:.75rem; border-radius:4px;
+    text-align:center !important;
+    padding:3px 1px !important;
+    font-size:.65rem !important;
+    border-radius:3px !important;
+    line-height:1.4 !important;
   }
-  body.pdf-calendar-mode .pdf-cal-day.period { background:#ffd6e7 !important; color:#e0407a !important; font-weight:600 }
-  body.pdf-calendar-mode .pdf-cal-day.fertile { background:#d1fae5 !important; color:#065f46 !important; font-weight:600 }
-  body.pdf-calendar-mode .pdf-cal-day.ovulation { background:#fde68a !important; color:#92400e !important; font-weight:700 }
-  body.pdf-calendar-mode .pdf-cal-day.today-mark { outline:2px solid #e0407a !important }
-  body.pdf-calendar-mode .pdf-cal-dow { font-size:.65rem; font-weight:700; color:#9b7ea4; text-align:center; padding:3px 0 }
-  @page { margin:16mm; size:A4 }
+  body.pdf-calendar-mode .pdf-cal-day.period    { background:#ffd6e7 !important; color:#e0407a !important; font-weight:700 !important }
+  body.pdf-calendar-mode .pdf-cal-day.fertile   { background:#d1fae5 !important; color:#065f46 !important; font-weight:600 !important }
+  body.pdf-calendar-mode .pdf-cal-day.ovulation { background:#fde68a !important; color:#92400e !important; font-weight:700 !important }
+  body.pdf-calendar-mode .pdf-cal-day.today-mark { outline:1.5px solid #e0407a !important }
+  body.pdf-calendar-mode .pdf-cal-dow { font-size:.58rem !important; font-weight:700 !important; color:#9b7ea4 !important; text-align:center !important; padding:2px 0 !important }
+  body.pdf-calendar-mode .pdf-month-title { font-size:.8rem !important; font-weight:700 !important; color:#e0407a !important; text-align:center !important; margin-bottom:4px !important; font-family:'Playfair Display',serif !important }
+  @page { margin:10mm; size:A4 landscape }
 }
 #auth-screen {
   position: fixed; inset: 0; z-index: 150;
@@ -1943,27 +1981,33 @@ function exportCalendarPDF() {
   const end = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 1);
   while (cur < end) { months.push(new Date(cur)); cur.setMonth(cur.getMonth() + 1); }
 
-  // Légende
+  // En-tête + légende
+  const genDate = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
   let html = `
-    <div style="margin-bottom:20px">
-      <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#e0407a;margin-bottom:4px">🌙 Luna — Calendriers du cycle</div>
-      <div style="font-size:.75rem;color:#9b7ea4;margin-bottom:12px">Généré le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.72rem;margin-bottom:8px">
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#ffd6e7;border-radius:2px;display:inline-block"></span>Règles</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#d1fae5;border-radius:2px;display:inline-block"></span>Fenêtre fertile</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#fde68a;border-radius:2px;display:inline-block"></span>Ovulation</span>
+    <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid #e0407a;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🌙</div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#e0407a;line-height:1">Luna — Calendrier annuel du cycle</div>
+          <div style="font-size:.68rem;color:#9b7ea4">Généré le ${genDate} • ${state.cycles.length} cycles calculés</div>
+        </div>
       </div>
-      <div style="height:2px;background:linear-gradient(90deg,#ff6b9d,#c084fc,transparent);border-radius:2px"></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.68rem;align-items:center">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#ffd6e7;border-radius:2px;display:inline-block;border:1px solid #f0b0c8"></span>Règles</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#d1fae5;border-radius:2px;display:inline-block;border:1px solid #a0d8c0"></span>Fenêtre fertile</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#fde68a;border-radius:2px;display:inline-block;border:1px solid #f0c040"></span>Ovulation</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;border-radius:2px;display:inline-block;border:1.5px solid #e0407a"></span>Aujourd'hui</span>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">`;
+    <div class="pdf-cal-months-grid">`;
 
   months.forEach(monthDate => {
     const y = monthDate.getFullYear(), m = monthDate.getMonth();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const firstDow = new Date(y, m, 1).getDay();
 
-    let calHtml = `<div class="pdf-cal-month" style="border:1px solid #f0dce8;border-radius:10px;padding:12px">`;
-    calHtml += `<div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:#e0407a;margin-bottom:8px;text-align:center">${MONTHS_FR[m]} ${y}</div>`;
+    let calHtml = `<div class="pdf-cal-month">`;
+    calHtml += `<div class="pdf-month-title">${MONTHS_FR[m]} ${y}</div>`;
     calHtml += `<div class="pdf-cal-grid">`;
     // En-têtes jours
     DAYS_FR.forEach(d => { calHtml += `<div class="pdf-cal-dow">${d}</div>`; });
@@ -1981,7 +2025,11 @@ function exportCalendarPDF() {
       calHtml += `<div class="${cls}">${d}</div>`;
     }
     calHtml += `</div></div>`;
+    // Insert page-break after every 9 months (3 rows of 3 on landscape A4)
     html += calHtml;
+    if ((months.indexOf(monthDate) + 1) % 9 === 0 && months.indexOf(monthDate) < months.length - 1) {
+      html += `</div><div style="page-break-after:always"></div><div class="pdf-cal-months-grid">`;
+    }
   });
 
   html += `</div>`;
