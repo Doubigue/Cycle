@@ -653,8 +653,22 @@ body.dark .mood-btn{background:rgba(255,107,157,.1)}
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
   body{background:#fff !important;color:#222 !important;font-family:'DM Sans',sans-serif !important}
   .bg-orbs,nav,header,.toast,#modal-overlay,#sky-canvas,#splash,#auth-screen{display:none !important}
-  #page-settings,#page-calendar,#page-insights,#page-journal,#page-dashboard{display:none !important}
+  /* Cacher TOUTES les pages sauf tableau */
+  #page-settings,#page-calendar,#page-insights,#page-journal,
+  #page-dashboard,#page-partner{display:none !important}
   #page-table{display:block !important;padding:0 !important}
+
+  /* App shell — pleine largeur, sans coupure */
+  #app{
+    padding:0 !important;
+    max-width:100% !important;
+    width:100% !important;
+    opacity:1 !important;
+    pointer-events:all !important;
+    position:static !important;
+  }
+  .bg-orbs,nav,header,.toast,#modal-overlay,#sky-canvas,
+  #splash,#auth-screen,#print-medical,#user-pill{display:none !important}
 
   /* PAGE 1 : couverture + résumé + conseils */
   #print-page1{display:block !important}
@@ -680,27 +694,47 @@ body.dark .mood-btn{background:rgba(255,107,157,.1)}
   #print-summary{display:block !important}
   #print-insights{display:block !important}
 
-  /* Tableau — suit directement la page 1 */
+  /* PAGE 2 : tableau complet */
   #print-page2{display:block !important}
 
-  .timeline-table-wrap{overflow:visible !important;box-shadow:none !important;border:2px solid #e0407a !important;border-radius:10px !important;margin-bottom:24px !important}
-  table.timeline{font-size:.82rem !important;width:100% !important}
+  /* Tableau — pas de coupure, pleine largeur */
+  .timeline-table-wrap{
+    overflow:visible !important;
+    box-shadow:none !important;
+    border:2px solid #e0407a !important;
+    border-radius:10px !important;
+    margin-bottom:24px !important;
+    width:100% !important;
+  }
+  table.timeline{
+    font-size:.78rem !important;
+    width:100% !important;
+    table-layout:fixed !important;
+  }
   table.timeline thead tr{background:#e0407a !important;color:#fff !important}
-  table.timeline th{padding:10px 12px !important;font-weight:600;letter-spacing:.5px}
-  table.timeline td{padding:8px 12px !important;border-bottom:1px solid #f3e3ee !important}
+  table.timeline th{
+    padding:8px 6px !important;
+    font-weight:600;
+    letter-spacing:.3px;
+    word-break:break-word;
+  }
+  table.timeline td{
+    padding:6px 6px !important;
+    border-bottom:1px solid #f3e3ee !important;
+    word-break:break-word;
+  }
   table.timeline tr:nth-child(even) td{background:#fff5f9 !important}
-  table.timeline tr[style*="background"]{background:#ffe8f2 !important}
-  .badge{border-radius:8px;padding:2px 8px;font-size:.72rem;font-weight:600;display:inline-block}
+  table.timeline tbody tr{page-break-inside:avoid}
+  .badge{border-radius:6px;padding:2px 6px;font-size:.68rem;font-weight:600;display:inline-block}
   .badge-period{background:#ffd6e7 !important;color:#e0407a !important}
   .badge-fertile{background:#d1fae5 !important;color:#065f46 !important}
   .badge-follicular{background:#dbeafe !important;color:#1e40af !important}
   .badge-luteal{background:#ede9fe !important;color:#5b21b6 !important}
-  .btn-sm,.search-wrap,.sec-header .timeline-title{display:none !important}
+  .btn-sm,.search-wrap{display:none !important}
   .sec-header{display:none !important}
-  .card{box-shadow:none !important;border:1px solid #f0dce8 !important;margin-bottom:16px !important}
+  .card{box-shadow:none !important;border:1px solid #f0dce8 !important;margin-bottom:12px !important}
   .history-chart{display:none !important}
-  #app{padding:0 16px !important;max-width:100% !important;opacity:1 !important;pointer-events:all !important}
-  @page{margin:18mm;size:A4}
+  @page{margin:12mm;size:A4 portrait}
 }
 #print-header{display:none}
 #print-cover{display:none}
