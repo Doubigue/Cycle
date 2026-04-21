@@ -341,9 +341,6 @@ body.pdf-calendar-mode #pdf-disclaimer { display:block !important }
   body.pdf-calendar-mode .pdf-cal-day.ovulation { background:#fde68a !important; color:#92400e !important; font-weight:700 }
   body.pdf-calendar-mode .pdf-cal-day.today-mark { outline:2px solid #e0407a !important }
   body.pdf-calendar-mode .pdf-cal-dow { font-size:.65rem; font-weight:700; color:#9b7ea4; text-align:center; padding:3px 0 }
-  body.pdf-medical-mode * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
-  body.pdf-medical-mode #print-medical { display:block !important; }
-  body.pdf-medical-mode > *:not(#print-medical) { display:none !important; }
   @page { margin:16mm; size:A4 }
 }
 #auth-screen {
@@ -722,144 +719,91 @@ body.dark .modal-sheet{background:#2a0a22}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-thumb{background:rgba(255,107,157,.3);border-radius:3px}
 
-/* ══════════════════════════════════════════
-   BBT CHART
-══════════════════════════════════════════ */
-.bbt-chart-wrap{position:relative;height:140px;margin:12px 0 4px;overflow:hidden}
+/* ══ BBT ══ */
+.bbt-chart-wrap{position:relative;height:130px;margin:10px 0 4px}
 .bbt-svg{width:100%;height:100%}
-.bbt-grid-line{stroke:rgba(155,126,164,.15);stroke-width:1}
-.bbt-line{stroke:var(--rose);stroke-width:2;fill:none;stroke-linejoin:round}
-.bbt-area{fill:url(#bbtGrad);opacity:.3}
-.bbt-dot{fill:var(--rose-deep);r:4;cursor:pointer;transition:r .2s}
-.bbt-dot:hover{r:6}
-.bbt-ov-line{stroke:var(--peach);stroke-width:1.5;stroke-dasharray:4 3}
-.bbt-label{font-size:9px;fill:var(--muted);font-family:'DM Sans',sans-serif}
-.bbt-temp-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:rgba(255,107,157,.1);border:1px solid rgba(255,107,157,.2);font-size:.78rem;font-weight:600;color:var(--rose-deep);margin:6px 0}
+.bbt-line{stroke:#ff6b9d;stroke-width:2;fill:none;stroke-linejoin:round}
+.bbt-area{fill:url(#bbtGrad);opacity:.25}
+.bbt-ov-line{stroke:#fdba74;stroke-width:1.5;stroke-dasharray:4 3}
+.bbt-lbl{font-size:9px;fill:rgba(155,126,164,.8);font-family:'DM Sans',sans-serif}
 .bbt-input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
 .bbt-temp-input{flex:1;padding:10px 14px;border-radius:12px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);outline:none}
 .bbt-temp-input:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(255,107,157,.12)}
-.bbt-save-btn{padding:10px 18px;border-radius:12px;background:linear-gradient(135deg,var(--rose),var(--lavender));color:#fff;border:none;cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap;transition:transform .2s}
-.bbt-save-btn:hover{transform:translateY(-1px)}
-
-/* ══════════════════════════════════════════
-   MOOD PREDICTIONS
-══════════════════════════════════════════ */
-.mood-pred-card{border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,.5);backdrop-filter:blur(8px)}
-.mood-pred-card.menstruation{background:linear-gradient(135deg,rgba(255,107,157,.12),rgba(224,64,122,.06))}
-.mood-pred-card.follicular{background:linear-gradient(135deg,rgba(147,197,253,.15),rgba(96,165,250,.07))}
-.mood-pred-card.fertile{background:linear-gradient(135deg,rgba(110,231,183,.15),rgba(52,211,153,.07))}
-.mood-pred-card.luteal{background:linear-gradient(135deg,rgba(192,132,252,.15),rgba(168,85,247,.07))}
-.mood-phase-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.mood-phase-emoji{font-size:1.8rem}
-.mood-phase-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700}
-.mood-phase-days{font-size:.72rem;color:var(--muted)}
-.mood-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.mood-tag{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:500;background:rgba(255,255,255,.6)}
-.mood-advice-list{font-size:.78rem;color:var(--muted);line-height:1.8}
-.mood-advice-list li{margin-bottom:2px}
-
-/* ══════════════════════════════════════════
-   PARTNER MODE
-══════════════════════════════════════════ */
-.partner-hero{background:linear-gradient(135deg,#7c3aed,#c084fc);border-radius:24px;padding:24px;margin-bottom:16px;color:#fff;text-align:center}
-.partner-hero-icon{font-size:2.5rem;margin-bottom:8px}
-.partner-hero-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:4px}
-.partner-hero-desc{font-size:.82rem;opacity:.85;line-height:1.5}
-.partner-link-box{background:rgba(255,255,255,.9);border-radius:16px;padding:14px;margin:12px 0;display:flex;align-items:center;gap:10px}
-.partner-link-text{flex:1;font-size:.73rem;color:var(--muted);word-break:break-all;font-family:monospace}
-.partner-copy-btn{padding:6px 14px;border-radius:10px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-size:.75rem;font-weight:600;flex-shrink:0;transition:opacity .2s}
-.partner-copy-btn:hover{opacity:.85}
-.partner-view-card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,.7)}
-.partner-phase-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,107,157,.08)}
+.bbt-save-btn{padding:10px 18px;border-radius:12px;background:linear-gradient(135deg,var(--rose),var(--lavender));color:#fff;border:none;cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap}
+/* ══ MOOD PRED ══ */
+.mood-pred-card{border-radius:18px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.5)}
+.mood-pred-card.menstruation{background:linear-gradient(135deg,rgba(255,107,157,.1),rgba(224,64,122,.05))}
+.mood-pred-card.follicular{background:linear-gradient(135deg,rgba(147,197,253,.12),rgba(96,165,250,.05))}
+.mood-pred-card.fertile{background:linear-gradient(135deg,rgba(110,231,183,.12),rgba(52,211,153,.05))}
+.mood-pred-card.luteal{background:linear-gradient(135deg,rgba(192,132,252,.12),rgba(168,85,247,.05))}
+.mood-pred-card.current{border:2px solid rgba(255,107,157,.4)}
+.mood-phase-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.mood-phase-emoji{font-size:1.6rem}
+.mood-phase-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700}
+.mood-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.mood-tag{padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:500;background:rgba(255,255,255,.6)}
+.mood-advice{font-size:.76rem;color:var(--muted);line-height:1.7}
+/* ══ PARTNER ══ */
+.partner-hero{background:linear-gradient(135deg,#7c3aed,#c084fc);border-radius:24px;padding:22px;margin-bottom:14px;color:#fff;text-align:center}
+.partner-link-box{background:rgba(255,255,255,.9);border-radius:14px;padding:12px;margin:10px 0;display:flex;align-items:center;gap:10px}
+.partner-link-text{flex:1;font-size:.7rem;color:var(--muted);word-break:break-all;font-family:monospace}
+.partner-copy-btn{padding:6px 14px;border-radius:10px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-size:.75rem;font-weight:600;flex-shrink:0}
+.partner-phase-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,107,157,.08)}
 .partner-phase-row:last-child{border-bottom:none}
-.partner-icon{font-size:1.4rem;width:36px;text-align:center}
-.partner-label{font-size:.78rem;color:var(--muted)}
-.partner-value{font-size:.9rem;font-weight:600;color:var(--text)}
-
-/* ══════════════════════════════════════════
-   IRREGULARITY DETECTION
-══════════════════════════════════════════ */
-.irreg-banner{border-radius:18px;padding:14px 16px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start}
-.irreg-banner.ok{background:linear-gradient(135deg,rgba(110,231,183,.18),rgba(52,211,153,.08));border:1px solid rgba(110,231,183,.35)}
-.irreg-banner.warn{background:linear-gradient(135deg,rgba(253,186,116,.2),rgba(249,115,22,.08));border:1px solid rgba(253,186,116,.4)}
-.irreg-banner.alert{background:linear-gradient(135deg,rgba(255,107,107,.15),rgba(239,68,68,.07));border:1px solid rgba(255,107,107,.3)}
-.irreg-icon{font-size:1.6rem;flex-shrink:0}
-.irreg-title{font-weight:700;font-size:.88rem;margin-bottom:3px}
-.irreg-body{font-size:.78rem;color:var(--muted);line-height:1.5}
-.cycle-length-bars{display:flex;align-items:flex-end;gap:3px;height:60px;margin:10px 0 4px}
-.cl-bar{flex:1;border-radius:3px 3px 0 0;transition:height .4s ease;cursor:pointer;position:relative}
-.cl-bar-tip{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:.55rem;font-weight:700;color:var(--rose-deep);white-space:nowrap;opacity:0;transition:opacity .2s}
+/* ══ IRREGULARITY ══ */
+.irreg-banner{border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.irreg-banner.ok{background:linear-gradient(135deg,rgba(110,231,183,.15),rgba(52,211,153,.06));border:1px solid rgba(110,231,183,.3)}
+.irreg-banner.warn{background:linear-gradient(135deg,rgba(253,186,116,.18),rgba(249,115,22,.06));border:1px solid rgba(253,186,116,.35)}
+.irreg-banner.alert{background:linear-gradient(135deg,rgba(255,107,107,.12),rgba(239,68,68,.05));border:1px solid rgba(255,107,107,.25)}
+.irreg-title{font-weight:700;font-size:.85rem;margin-bottom:2px}
+.irreg-body{font-size:.76rem;color:var(--muted);line-height:1.5}
+.cl-bars{display:flex;align-items:flex-end;gap:3px;height:50px;margin:10px 0 2px}
+.cl-bar{flex:1;border-radius:3px 3px 0 0;cursor:pointer;position:relative;min-width:8px}
+.cl-bar-tip{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.55rem;font-weight:700;color:var(--rose-deep);white-space:nowrap;opacity:0;transition:opacity .2s}
 .cl-bar:hover .cl-bar-tip{opacity:1}
-
-/* ══════════════════════════════════════════
-   CUSTOM SYMPTOMS
-══════════════════════════════════════════ */
-.custom-symptom-add{display:flex;gap:8px;margin-top:12px}
-.custom-symptom-input{flex:1;padding:9px 14px;border-radius:12px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);outline:none}
-.custom-symptom-input:focus{border-color:var(--rose)}
-.custom-add-btn{padding:9px 14px;border-radius:12px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s}
-.custom-add-btn:hover{opacity:.85}
-.symptom-chip.custom{background:rgba(192,132,252,.12);border-color:var(--lavender)}
-.symptom-chip.custom.selected{background:rgba(192,132,252,.25);border-color:var(--lavender)}
-.symptom-chip .remove-sym{margin-left:4px;font-size:.7rem;opacity:.6;cursor:pointer}
-.symptom-chip .remove-sym:hover{opacity:1}
-
-/* ══════════════════════════════════════════
-   MEDICAL PDF EXPORT
-══════════════════════════════════════════ */
-.medical-pdf-btn{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;transition:transform .2s,opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
-.medical-pdf-btn:hover{transform:translateY(-1px);opacity:.92}
-@media print {
-  body.pdf-medical-mode #sky-canvas,
-  body.pdf-medical-mode #splash,
-  body.pdf-medical-mode #auth-screen,
-  body.pdf-medical-mode nav,
-  body.pdf-medical-mode .bg-orbs,
-  body.pdf-medical-mode .toast,
-  body.pdf-medical-mode #modal-overlay,
-  body.pdf-medical-mode #app > *:not(#page-table) { display:none !important }
-  body.pdf-medical-mode #page-table { display:block !important }
-  body.pdf-medical-mode #print-medical { display:block !important }
-  body.pdf-medical-mode #print-page2 { display:none !important }
-  body.pdf-medical-mode #print-page1 { display:none !important }
-}
-#print-medical{display:none}
-
-/* ══════════════════════════════════════════
-   WIDGET PREVIEW
-══════════════════════════════════════════ */
-.widget-preview-wrap{display:flex;gap:12px;justify-content:center;margin:12px 0;flex-wrap:wrap}
-.widget-small{width:155px;height:155px;border-radius:32px;background:linear-gradient(135deg,#1a0a14,#2d0845);padding:16px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);position:relative;overflow:hidden}
-.widget-small::before{content:'';position:absolute;inset:0;border-radius:32px;border:1px solid rgba(255,214,231,.15)}
-.widget-medium{width:329px;height:155px;border-radius:32px;background:linear-gradient(135deg,#0a0028,#1a0838);padding:18px;display:flex;align-items:center;gap:16px;box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);position:relative;overflow:hidden}
-.widget-medium::before{content:'';position:absolute;inset:0;border-radius:32px;border:1px solid rgba(255,214,231,.15)}
-.wid-luna-badge{font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,214,231,.4);margin-bottom:2px}
-.wid-phase{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:4px}
-.wid-day{font-size:.65rem;color:rgba(255,214,231,.6)}
-.wid-dot-row{display:flex;gap:3px;margin-top:6px}
-.wid-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2)}
-.wid-dot.active{background:var(--rose)}
-.wid-moon{font-size:2rem;line-height:1}
-.wid-big-phase{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:4px}
-.wid-stat{font-size:.72rem;color:rgba(255,214,231,.7);margin-bottom:2px}
-.wid-fertility{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;background:rgba(110,231,183,.2);font-size:.65rem;font-weight:600;color:#6ee7b7;margin-top:6px}
-.wid-accent{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,.25),transparent);top:-20px;right:-20px}
-
-/* ══════════════════════════════════════════
-   PUSH NOTIFICATIONS (in-app)
-══════════════════════════════════════════ */
-.notif-card{border-radius:18px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid rgba(255,107,157,.12);transition:opacity .3s}
-.notif-icon{font-size:1.5rem;flex-shrink:0}
-.notif-content{flex:1}
-.notif-title{font-size:.85rem;font-weight:600;margin-bottom:3px}
-.notif-body{font-size:.75rem;color:var(--muted);line-height:1.5}
-.notif-time{font-size:.68rem;color:var(--muted);margin-top:4px}
-.notif-dismiss{background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted);padding:4px;flex-shrink:0;transition:color .2s}
+/* ══ CUSTOM SYMPTOMS ══ */
+.custom-sym-add{display:flex;gap:8px;margin-top:10px}
+.custom-sym-input{flex:1;padding:9px 13px;border-radius:12px;border:1.5px solid rgba(255,107,157,.2);background:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);outline:none}
+.custom-sym-input:focus{border-color:var(--rose)}
+.custom-add-btn{padding:9px 14px;border-radius:12px;background:var(--rose);color:#fff;border:none;cursor:pointer;font-size:.85rem;font-weight:600}
+.symptom-chip.custom-chip{background:rgba(192,132,252,.1)}
+.symptom-chip.custom-chip.selected{background:rgba(192,132,252,.22);border-color:var(--lavender)}
+.remove-sym{margin-left:4px;font-size:.65rem;opacity:.55;cursor:pointer;display:inline-block;line-height:1}
+.remove-sym:hover{opacity:1}
+/* ══ MEDICAL PDF BTN ══ */
+.btn-medical{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;transition:transform .2s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-medical:hover{transform:translateY(-1px)}
+/* ══ WIDGET PREVIEW ══ */
+.widget-prev-wrap{display:flex;gap:10px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.wid-sm{width:150px;height:150px;border-radius:30px;background:linear-gradient(135deg,#1a0a14,#2d0845);padding:14px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);position:relative;overflow:hidden}
+.wid-md{width:100%;height:150px;border-radius:30px;background:linear-gradient(135deg,#0a0028,#1a0838);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);position:relative;overflow:hidden}
+.wid-sm::before,.wid-md::before{content:'';position:absolute;inset:0;border-radius:30px;border:1px solid rgba(255,214,231,.12)}
+.wid-luna{font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,214,231,.35);margin-bottom:2px}
+.wid-phase-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:3px}
+.wid-day-lbl{font-size:.6rem;color:rgba(255,214,231,.55)}
+.wid-dots{display:flex;gap:3px;margin-top:4px}
+.wid-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18)}
+.wid-dot.on{background:var(--rose)}
+.wid-big-phase{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:4px}
+.wid-stat-row{font-size:.68rem;color:rgba(255,214,231,.65);margin-bottom:2px}
+.wid-score{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:10px;background:rgba(110,231,183,.18);font-size:.62rem;font-weight:600;color:#6ee7b7;margin-top:5px}
+.wid-accent{position:absolute;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,157,.2),transparent);top:-15px;right:-15px;pointer-events:none}
+/* ══ NOTIFICATIONS ══ */
+.notif-card{border-radius:16px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid rgba(255,107,157,.1);transition:opacity .3s}
+.notif-icon{font-size:1.4rem;flex-shrink:0;line-height:1.2}
+.notif-title{font-size:.83rem;font-weight:600;margin-bottom:2px}
+.notif-body{font-size:.74rem;color:var(--muted);line-height:1.45}
+.notif-time{font-size:.65rem;color:var(--muted);margin-top:3px}
+.notif-dismiss{background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--muted);padding:2px;flex-shrink:0;line-height:1;transition:color .15s}
 .notif-dismiss:hover{color:var(--rose-deep)}
-.notif-empty{text-align:center;padding:20px;font-size:.82rem;color:var(--muted)}
+/* ══ PRINT MEDICAL ══ */
+#print-medical{display:none}
+@media print {
+  body.pdf-medical-mode > *{display:none !important}
+  body.pdf-medical-mode #print-medical{display:block !important}
+  body.pdf-medical-mode *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+}
 
-/* New nav tab for BBT/advanced */
-.nav-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--rose);position:absolute;top:4px;right:10px;animation:pulse-dot 2s infinite}
 </style>
 </head>
 <body>
@@ -1136,20 +1080,17 @@ body.dark .modal-sheet{background:#2a0a22}
       <div class="sec-title" style="margin-bottom:10px">📈 Statistiques</div>
       <div id="cycle-stats-body" style="font-size:.85rem;color:var(--muted);line-height:2">—</div>
     </div>
-    <!-- MOOD PREDICTIONS -->
     <div class="card">
-      <div class="sec-title" style="margin-bottom:12px">🎭 Humeur prédite par phase</div>
-      <div id="mood-predictions-container"></div>
+      <div class="sec-title" style="margin-bottom:10px">🎭 Humeur & bien-être par phase</div>
+      <div id="mood-pred-container"></div>
     </div>
-    <!-- IRREGULARITY DETECTION -->
     <div class="card">
-      <div class="sec-title" style="margin-bottom:12px">📊 Détection d'irrégularités</div>
-      <div id="irreg-container"><div style="font-size:.82rem;color:var(--muted);text-align:center;padding:12px">Calculez votre cycle pour voir l'analyse</div></div>
+      <div class="sec-title" style="margin-bottom:10px">📊 Détection d'irrégularités</div>
+      <div id="irreg-container"><div style="font-size:.8rem;color:var(--muted);text-align:center;padding:12px">Configurez votre cycle pour voir l'analyse</div></div>
     </div>
-    <!-- PUSH NOTIFICATIONS (in-app) -->
     <div class="card">
-      <div class="sec-title" style="margin-bottom:12px">🔔 Notifications récentes</div>
-      <div id="notif-container"></div>
+      <div class="sec-title" style="margin-bottom:10px">🔔 Rappels & notifications</div>
+      <div id="notif-container"><div style="font-size:.8rem;color:var(--muted);text-align:center;padding:12px">—</div></div>
     </div>
   </div>
 
@@ -1178,26 +1119,21 @@ body.dark .modal-sheet{background:#2a0a22}
         <span class="symptom-chip" onclick="toggleSymptom(this,'sensibilité seins')">💗 Sensibilité seins</span>
         <span class="symptom-chip" onclick="toggleSymptom(this,'nausées')">🤢 Nausées</span>
         <span class="symptom-chip" onclick="toggleSymptom(this,'douleurs dos')">🔙 Douleurs dos</span>
-        <span id="custom-symptoms-container"></span>
+        <span id="custom-chips-here"></span>
       </div>
-      <div class="custom-symptom-add">
-        <input type="text" class="custom-symptom-input" id="custom-sym-input" placeholder="✚ Ajouter un symptôme…" maxlength="30">
+      <div class="custom-sym-add">
+        <input type="text" class="custom-sym-input" id="custom-sym-input" placeholder="✚ Ajouter un symptôme…" maxlength="30">
         <button class="custom-add-btn" onclick="addCustomSymptom()">+</button>
       </div>
     </div>
     <div class="card">
-      <div class="sec-title" style="margin-bottom:10px">🌡️ Température basale (BBT)</div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Mesurée chaque matin au réveil, avant de se lever</div>
-      <div class="bbt-temp-badge"><span id="bbt-today-label">—°C</span><span style="font-size:.7rem;color:var(--muted);font-weight:400">aujourd'hui</span></div>
+      <div class="sec-title" style="margin-bottom:6px">🌡️ Température basale (BBT)</div>
+      <div style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Mesurée chaque matin au réveil, avant de se lever</div>
+      <div id="bbt-today-badge" style="font-size:.82rem;font-weight:600;color:var(--rose-deep);margin-bottom:6px">— °C aujourd'hui</div>
       <div class="bbt-chart-wrap">
-        <svg class="bbt-svg" id="bbt-svg" viewBox="0 0 320 140" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="bbtGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ff6b9d"/>
-              <stop offset="100%" stop-color="#ff6b9d" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <text id="bbt-no-data" x="160" y="75" text-anchor="middle" font-size="12" fill="rgba(155,126,164,.5)" font-family="DM Sans,sans-serif">Entrez votre température quotidienne</text>
+        <svg id="bbt-svg" class="bbt-svg" viewBox="0 0 320 130" preserveAspectRatio="none">
+          <defs><linearGradient id="bbtGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff6b9d"/><stop offset="100%" stop-color="#ff6b9d" stop-opacity="0"/></linearGradient></defs>
+          <text id="bbt-no-data" x="160" y="68" text-anchor="middle" font-size="11" fill="rgba(155,126,164,.55)" font-family="DM Sans,sans-serif">Entrez votre température quotidienne</text>
         </svg>
       </div>
       <div class="bbt-input-row">
@@ -1205,6 +1141,8 @@ body.dark .modal-sheet{background:#2a0a22}
         <button class="bbt-save-btn" onclick="saveBBT()">💾 Enregistrer</button>
       </div>
     </div>
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px">📝 Note du jour</div>
       <textarea class="note-area" id="journal-note" placeholder="Comment vous sentez-vous aujourd'hui ?" rows="4"></textarea>
       <button class="btn-primary" style="margin-top:10px" onclick="saveJournalEntry()">💾 Enregistrer l'entrée</button>
     </div>
@@ -1293,50 +1231,21 @@ body.dark .modal-sheet{background:#2a0a22}
     <div class="settings-section">
       <div class="settings-section-title">🏥 Export médical</div>
       <div class="card">
-        <div style="font-size:.82rem;color:var(--muted);margin-bottom:10px;line-height:1.6">
-          Générez un <strong>PDF médical structuré</strong> à présenter à votre gynécologue ou médecin traitant.
-        </div>
-        <button class="medical-pdf-btn" onclick="exportMedicalPDF()">🏥 Générer le rapport médical PDF</button>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;line-height:1.6">PDF structuré à présenter à votre gynécologue. Inclut cycles, BBT, symptômes récurrents et notes journal.</div>
+        <button class="btn-medical" onclick="exportMedicalPDF()">🏥 Générer le rapport médical PDF</button>
       </div>
     </div>
-
     <!-- Widget Preview -->
     <div class="settings-section">
       <div class="settings-section-title">📱 Widget iOS / Android</div>
       <div class="card">
-        <div style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
-          Aperçu des widgets home-screen. Installez Luna en PWA pour les activer sur votre écran d'accueil.
-        </div>
-        <div class="widget-preview-wrap">
-          <!-- Small widget -->
-          <div class="widget-small">
-            <div class="wid-accent"></div>
-            <div>
-              <div class="wid-luna-badge">LUNA</div>
-              <div class="wid-phase" id="wid-sm-phase">—</div>
-              <div class="wid-day" id="wid-sm-day">Jour —</div>
-            </div>
-            <div class="wid-dot-row" id="wid-sm-dots"></div>
-          </div>
-          <!-- Medium widget -->
-          <div class="widget-medium">
-            <div class="wid-accent"></div>
-            <div style="font-size:2.8rem">🌙</div>
-            <div>
-              <div class="wid-luna-badge">LUNA — Cycle</div>
-              <div class="wid-big-phase" id="wid-md-phase">—</div>
-              <div class="wid-stat" id="wid-md-next">🩸 Règles dans —</div>
-              <div class="wid-stat" id="wid-md-fertile">🌿 Fertile dans —</div>
-              <div class="wid-fertility" id="wid-md-score">Fertilité —</div>
-            </div>
-          </div>
-        </div>
-        <div style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:8px">
-          Sur iPhone : Safari › Partager › Sur l'écran d'accueil
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Aperçu des widgets. Installez Luna en PWA (Safari › Partager › Sur l'écran d'accueil) pour les activer.</div>
+        <div class="widget-prev-wrap">
+          <div class="wid-sm"><div class="wid-accent"></div><div><div class="wid-luna">LUNA</div><div class="wid-phase-name" id="wid-sm-phase">—</div><div class="wid-day-lbl" id="wid-sm-day">Jour —</div></div><div class="wid-dots" id="wid-sm-dots"></div></div>
+          <div class="wid-md"><div class="wid-accent"></div><div style="font-size:2.4rem;flex-shrink:0">🌙</div><div><div class="wid-luna">LUNA — Cycle</div><div class="wid-big-phase" id="wid-md-phase">—</div><div class="wid-stat-row" id="wid-md-next">🩸 —</div><div class="wid-stat-row" id="wid-md-fertile">🌿 —</div><div class="wid-score" id="wid-md-score">Fertilité —</div></div></div>
         </div>
       </div>
     </div>
-
     <!-- About -->
     <div class="settings-section">
       <div class="settings-section-title">ℹ️ À propos</div>
@@ -1348,49 +1257,36 @@ body.dark .modal-sheet{background:#2a0a22}
       </div>
     </div>
   </div>
-  <!-- PARTNER MODE -->
+
+  <!-- PARTNER MODE PAGE -->
   <div id="page-partner" class="page">
     <div class="partner-hero">
-      <div class="partner-hero-icon">💑</div>
-      <div class="partner-hero-title">Mode Partenaire</div>
-      <div class="partner-hero-desc">Partagez un lien en lecture seule avec votre partenaire pour qu'il comprenne votre cycle</div>
+      <div style="font-size:2.2rem;margin-bottom:6px">💑</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:4px">Mode Partenaire</div>
+      <div style="font-size:.8rem;opacity:.85;line-height:1.5">Partagez votre cycle en lecture seule</div>
     </div>
     <div class="card">
-      <div class="sec-title" style="margin-bottom:10px">🔗 Lien de partage</div>
-      <div style="font-size:.82rem;color:var(--muted);margin-bottom:10px">Ce lien donne un accès <strong>lecture seule</strong> — aucune donnée ne peut être modifiée</div>
+      <div class="sec-title" style="margin-bottom:8px">🔗 Lien de partage</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Accès <strong>lecture seule</strong> — aucune modification possible</div>
       <div class="partner-link-box">
-        <div class="partner-link-text" id="partner-link-text">Générez un lien ci-dessous</div>
-        <button class="partner-copy-btn" onclick="copyPartnerLink()">📋 Copier</button>
+        <div class="partner-link-text" id="partner-link-text">Appuyez sur Générer ci-dessous</div>
+        <button class="partner-copy-btn" onclick="copyPartnerLink()">📋</button>
       </div>
-      <button class="btn-primary" style="margin-top:8px" onclick="generatePartnerLink()">🔗 Générer un nouveau lien</button>
+      <button class="btn-primary" style="margin-top:8px" onclick="generatePartnerLink()">🔗 Générer un lien</button>
       <button class="btn-secondary" style="margin-top:8px" onclick="revokePartnerLink()">🗑️ Révoquer l'accès</button>
     </div>
     <div class="card">
-      <div class="sec-title" style="margin-bottom:12px">👀 Vue partenaire (aperçu)</div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;padding:8px 12px;border-radius:10px;background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.2)">
-        👁️ Mode lecture seule — Votre partenaire voit uniquement ces informations
-      </div>
-      <div class="partner-view-card">
-        <div class="partner-phase-row">
-          <div class="partner-icon">🌸</div>
-          <div style="flex:1"><div class="partner-label">Phase actuelle</div><div class="partner-value" id="partner-phase">—</div></div>
-        </div>
-        <div class="partner-phase-row">
-          <div class="partner-icon">📅</div>
-          <div style="flex:1"><div class="partner-label">Jour du cycle</div><div class="partner-value" id="partner-day">—</div></div>
-        </div>
-        <div class="partner-phase-row">
-          <div class="partner-icon">🩸</div>
-          <div style="flex:1"><div class="partner-label">Prochaines règles</div><div class="partner-value" id="partner-next-period">—</div></div>
-        </div>
-        <div class="partner-phase-row">
-          <div class="partner-icon">💡</div>
-          <div style="flex:1"><div class="partner-label">Conseil du jour</div><div class="partner-value" id="partner-tip" style="font-size:.8rem;font-weight:400;color:var(--muted)">—</div></div>
-        </div>
+      <div class="sec-title" style="margin-bottom:10px">👀 Ce que voit votre partenaire</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:12px;padding:8px 12px;border-radius:10px;background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.18)">👁️ Vue lecture seule uniquement</div>
+      <div class="card" style="margin-bottom:0;padding:12px">
+        <div class="partner-phase-row"><div style="font-size:1.3rem;width:32px;text-align:center">🌸</div><div style="flex:1"><div style="font-size:.72rem;color:var(--muted)">Phase actuelle</div><div style="font-size:.88rem;font-weight:600" id="partner-phase">—</div></div></div>
+        <div class="partner-phase-row"><div style="font-size:1.3rem;width:32px;text-align:center">📅</div><div style="flex:1"><div style="font-size:.72rem;color:var(--muted)">Jour du cycle</div><div style="font-size:.88rem;font-weight:600" id="partner-day">—</div></div></div>
+        <div class="partner-phase-row"><div style="font-size:1.3rem;width:32px;text-align:center">🩸</div><div style="flex:1"><div style="font-size:.72rem;color:var(--muted)">Prochaines règles</div><div style="font-size:.88rem;font-weight:600" id="partner-next">—</div></div></div>
+        <div class="partner-phase-row"><div style="font-size:1.3rem;width:32px;text-align:center">💡</div><div style="flex:1"><div style="font-size:.72rem;color:var(--muted)">Conseil du jour</div><div style="font-size:.8rem;color:var(--muted);font-style:italic" id="partner-tip">—</div></div></div>
       </div>
     </div>
     <div class="card">
-      <div class="sec-title" style="margin-bottom:10px">💬 Guide du partenaire</div>
+      <div class="sec-title" style="margin-bottom:8px">💬 Guide du partenaire</div>
       <div id="partner-guide" style="font-size:.82rem;color:var(--muted);line-height:1.8">—</div>
     </div>
   </div>
@@ -1402,14 +1298,13 @@ body.dark .modal-sheet{background:#2a0a22}
   <button class="nav-item active" id="nav-dashboard" onclick="navigate('dashboard')"><span class="nav-icon">🌸</span><span>Accueil</span></button>
   <button class="nav-item" id="nav-calendar" onclick="navigate('calendar')"><span class="nav-icon">📆</span><span>Calendrier</span></button>
   <button class="nav-item" id="nav-table" onclick="navigate('table')"><span class="nav-icon">📋</span><span>Tableau</span></button>
-  <button class="nav-item" id="nav-insights" onclick="navigate('insights')" style="position:relative"><span class="nav-icon">✨</span><span>Insights</span></button>
+  <button class="nav-item" id="nav-insights" onclick="navigate('insights')"><span class="nav-icon">✨</span><span>Insights</span></button>
   <button class="nav-item" id="nav-journal" onclick="navigate('journal')"><span class="nav-icon">📓</span><span>Journal</span></button>
   <button class="nav-item" id="nav-partner" onclick="navigate('partner')"><span class="nav-icon">💑</span><span>Partenaire</span></button>
   <button class="nav-item" id="nav-settings" onclick="navigate('settings')"><span class="nav-icon">⚙️</span><span>Réglages</span></button>
 </nav>
 
-<div id="print-medical" style="display:none"></div>
-
+<div id="print-medical"></div>
 <div class="toast" id="toast"></div>
 
 <div id="modal-overlay" onclick="closeModal(event)">
@@ -1441,6 +1336,7 @@ const SKY_THEMES = {
   insights:  { layer:'golden', dark:false, bright:false, day:false, sunset:true  },
   journal:   { layer:'dusk',   dark:true,  bright:false, day:false, sunset:false },
   settings:  { layer:'night',  dark:true,  bright:false, day:false, sunset:false },
+  partner:   { layer:'night',  dark:true,  bright:false, day:false, sunset:false },
 };
 
 const ORB_PALETTES = {
@@ -1450,6 +1346,7 @@ const ORB_PALETTES = {
   insights:  ['#fcd34d,#f59e0b','#fda4af,#f43f5e','#c4b5fd,#a855f7'],
   journal:   ['#f5d0fe,#d946ef','#c4b5fd,#7c3aed','#fda4af,#e11d48'],
   settings:  ['#1e1b4b,#312e81','#0f172a,#1e293b','#0c0a1e,#1e1b4b'],
+  partner:   ['#4c1d95,#7c3aed','#1e1b4b,#4338ca','#f5d0fe,#d946ef'],
 };
 
 /* ═══════════════════════════════════════════════
@@ -1461,7 +1358,8 @@ let state = {
   autoSave: true, darkMode: false, notifEnabled: true,
   cycles: [], journal: {}, calNotes: {}, pillsToday: {},
   lastAutoSave: null, backupHistory: [], currentCalDate: null,
-  userInfo: null
+  userInfo: null,
+  bbt: {}, customSymptoms: [], dismissedNotifs: [], partnerToken: null
 };
 let tokenClient = null;
 let currentPage = 'dashboard';
@@ -1584,7 +1482,7 @@ function enterApp(userInfo, isNew) {
   initCalViewMonth();
   renderJournal();
   loadPillsToday();
-  renderCustomSymptoms();
+  renderCustomChips();
 
   setSky('dawn');
 
@@ -1741,14 +1639,18 @@ function navigate(page) {
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('nav-' + page).classList.add('active');
+  const pageEl = document.getElementById('page-' + page);
+  const navEl  = document.getElementById('nav-'  + page);
+  if (pageEl) pageEl.classList.add('active');
+  if (navEl)  navEl.classList.add('active');
 
   // Animated sky transition
   transitionSky(page);
 
-  if (page === 'insights') renderInsights();
-  if (page === 'journal')  renderJournal();
+  if (page === 'insights') { renderInsights(); renderMoodPredictions(); renderIrregularities(); renderNotifications(); }
+  if (page === 'journal')  { renderJournal(); renderBBTChart(); renderCustomChips(); }
+  if (page === 'partner')  renderPartnerPage();
+  if (page === 'settings') renderWidgetPreview();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1758,6 +1660,7 @@ function loadLocal() {
   try {
     const s = JSON.parse(localStorage.getItem('luna_v3') || '{}');
     state = {...state, ...s};
+    ensureStateDefaults();
     if (state.cycles) {
       state.cycles = state.cycles.map(c => ({
         ...c,
@@ -1772,6 +1675,7 @@ function loadLocal() {
   } catch(e) {}
 }
 function saveLocal() { localStorage.setItem('luna_v3', JSON.stringify(state)); }
+function ensureStateDefaults() { if(!state.bbt)state.bbt={}; if(!state.customSymptoms)state.customSymptoms=[]; if(!state.dismissedNotifs)state.dismissedNotifs=[]; if(state.partnerToken===undefined)state.partnerToken=null; }
 
 /* ═══════════════════════════════════════════════
    DATE HELPERS
@@ -1805,7 +1709,7 @@ function computeAll() {
   saveLocal();
 }
 
-function renderAll() { renderDashboard(); renderCalendar(); renderTable(); renderHistoryChart(); }
+function renderAll() { renderDashboard(); renderCalendar(); renderTable(); renderHistoryChart(); renderWidgetPreview(); }
 
 /* ═══════════════════════════════════════════════
    DASHBOARD
@@ -2469,628 +2373,404 @@ function setBtnSpinning(on) {
   if (on) btn.classList.add('spinning'); else btn.classList.remove('spinning');
 }
 
-/* ═══════════════════════════════════════════════
-   NAVIGATION — PARTNER PAGE SUPPORT
-═══════════════════════════════════════════════ */
-const _origNavigate = navigate;
-// Patch navigate to handle partner page
-function navigate(page) {
-  if (page === currentPage) return;
-  currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const pageEl = document.getElementById('page-' + page);
-  const navEl  = document.getElementById('nav-' + page);
-  if (pageEl) pageEl.classList.add('active');
-  if (navEl)  navEl.classList.add('active');
-  transitionSky(page);
-  if (page === 'insights') { renderInsights(); renderMoodPredictions(); renderIrregularities(); renderNotifications(); }
-  if (page === 'journal')  { renderJournal(); renderBBTChart(); renderCustomSymptoms(); }
-  if (page === 'partner')  renderPartnerPage();
-  if (page === 'settings') renderWidgetPreview();
-}
 
-/* ═══════════════════════════════════════════════
-   BBT — TEMPERATURE BASALE
-═══════════════════════════════════════════════ */
-function saveBBT() {
-  const val = parseFloat(document.getElementById('bbt-input').value);
-  if (isNaN(val) || val < 35 || val > 38.5) { showToast('⚠️ Température invalide (35–38.5°C)'); return; }
-  const key = fmtISO(today());
-  if (!state.bbt) state.bbt = {};
-  state.bbt[key] = val;
-  saveLocal();
-  document.getElementById('bbt-input').value = '';
-  showToast('🌡️ Température enregistrée : ' + val.toFixed(2) + '°C');
-  renderBBTChart();
-}
-
-function renderBBTChart() {
-  if (!state.bbt) state.bbt = {};
-  const todayKey = fmtISO(today());
-  const todayVal = state.bbt[todayKey];
-  document.getElementById('bbt-today-label').textContent = todayVal ? todayVal.toFixed(2) + '°C' : '—°C';
-
-  const svg = document.getElementById('bbt-svg');
-  if (!svg) return;
-
-  // Get last 30 days with data
-  const days = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = addDays(today(), -i);
-    const k = fmtISO(d);
-    if (state.bbt[k] !== undefined) days.push({ key: k, val: state.bbt[k], d });
-  }
-
-  const noData = document.getElementById('bbt-no-data');
-  if (days.length < 2) {
-    if (noData) noData.style.display = 'block';
-    return;
-  }
-  if (noData) noData.style.display = 'none';
-
-  const W = 320, H = 140, padX = 28, padY = 16;
-  const vals = days.map(d => d.val);
-  const minV = Math.min(...vals) - 0.1, maxV = Math.max(...vals) + 0.1;
-  const toX = i => padX + i * ((W - padX * 2) / (days.length - 1));
-  const toY = v => padY + (1 - (v - minV) / (maxV - minV)) * (H - padY * 2);
-
-  // Remove old dynamic elements
-  svg.querySelectorAll('.bbt-dyn').forEach(e => e.remove());
-
-  // Grid lines
-  [minV, (minV + maxV) / 2, maxV].forEach(v => {
-    const y = toY(v);
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', padX); line.setAttribute('x2', W - padX);
-    line.setAttribute('y1', y); line.setAttribute('y2', y);
-    line.setAttribute('class', 'bbt-grid-line bbt-dyn');
-    svg.appendChild(line);
-    const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    lbl.setAttribute('x', padX - 4); lbl.setAttribute('y', y + 3);
-    lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 'bbt-label bbt-dyn');
-    lbl.textContent = v.toFixed(1);
-    svg.appendChild(lbl);
-  });
-
-  // Area path
-  let areaD = `M${toX(0)},${H - padY}`;
-  days.forEach((d, i) => { areaD += ` L${toX(i)},${toY(d.val)}`; });
-  areaD += ` L${toX(days.length - 1)},${H - padY} Z`;
-  const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  area.setAttribute('d', areaD); area.setAttribute('class', 'bbt-area bbt-dyn');
-  svg.appendChild(area);
-
-  // Line path
-  let lineD = '';
-  days.forEach((d, i) => { lineD += (i === 0 ? 'M' : 'L') + toX(i) + ',' + toY(d.val); });
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  line.setAttribute('d', lineD); line.setAttribute('class', 'bbt-line bbt-dyn');
-  svg.appendChild(line);
-
-  // Ovulation line (day 14 before period end or computed)
-  const cur = state.cycles.find(c => today() >= c.periodStart && today() < c.nextPeriod);
-  if (cur) {
-    const ovKey = fmtISO(cur.ovulation);
-    const ovIdx = days.findIndex(d => d.key === ovKey);
-    if (ovIdx >= 0) {
-      const ox = toX(ovIdx);
-      const ovLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      ovLine.setAttribute('x1', ox); ovLine.setAttribute('x2', ox);
-      ovLine.setAttribute('y1', padY); ovLine.setAttribute('y2', H - padY);
-      ovLine.setAttribute('class', 'bbt-ov-line bbt-dyn');
-      svg.appendChild(ovLine);
-      const ovLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      ovLbl.setAttribute('x', ox + 3); ovLbl.setAttribute('y', padY + 10);
-      ovLbl.setAttribute('class', 'bbt-label bbt-dyn');
-      ovLbl.textContent = '🥚';
-      svg.appendChild(ovLbl);
-    }
-  }
-
-  // Dots
-  days.forEach((d, i) => {
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', toX(i)); circle.setAttribute('cy', toY(d.val));
-    circle.setAttribute('r', 4); circle.setAttribute('class', 'bbt-dot bbt-dyn');
-    circle.setAttribute('fill', d.key === todayKey ? '#e0407a' : '#ff6b9d');
-    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-    title.textContent = d.key + ' : ' + d.val.toFixed(2) + '°C';
-    circle.appendChild(title);
-    svg.appendChild(circle);
-  });
-}
-
-/* ═══════════════════════════════════════════════
-   MOOD PREDICTIONS
-═══════════════════════════════════════════════ */
-const MOOD_DATA = {
-  menstruation: {
-    emoji: '🩸', name: 'Menstruation', color: 'menstruation',
-    tags: ['Fatigue', 'Sensibilité', 'Introversion', 'Douceur'],
-    moods: ['Mélancolie légère', 'Besoin de calme', 'Sensibilité accrue'],
-    advice: ['🛁 Bain chaud et bouillotte', '🫖 Tisanes anti-crampes (gingembre, framboisier)', '🎵 Musique douce, films réconfortants', '🚫 Évitez les engagements sociaux non essentiels', '🍫 Magnésium + chocolat noir ≥ 70%']
-  },
-  follicular: {
-    emoji: '💙', name: 'Phase folliculaire', color: 'follicular',
-    tags: ['Énergie', 'Créativité', 'Optimisme', 'Sociabilité'],
-    moods: ['Enthousiasme en hausse', 'Envie de nouveauté', 'Clarté mentale'],
-    advice: ['⚡ Idéale pour démarrer de nouveaux projets', '🏃 Exercice intense bienvenu', '🎨 Activités créatives & apprentissage', '💬 Bonne période pour les discussions importantes', '🥗 Légumes frais, protéines légères']
-  },
-  fertile: {
-    emoji: '🌿', name: 'Fenêtre fertile', color: 'fertile',
-    tags: ['Confiance', 'Séduction', 'Éloquence', 'Énergie maximale'],
-    moods: ['Pic de charme naturel', 'Communication fluide', 'Désir accru'],
-    advice: ['💪 Performances sportives au maximum', '💼 Présentations & négociations importantes', '❤️ Connexion et intimité renforcées', '🌸 Votre peau est au meilleur', '💊 Acide folique si projet bébé']
-  },
-  luteal: {
-    emoji: '💜', name: 'Phase lutéale', color: 'luteal',
-    tags: ['Introspection', 'Sensibilité', 'Fatigue possible', 'SPM possible'],
-    moods: ['Humeur variable', 'Besoin de sécurité', 'Irritabilité possible'],
-    advice: ['🌙 Privilégiez le sommeil (8h+)', '🧘 Yoga, méditation, marche douce', '📔 Journaling pour les émotions', '🫐 Évitez alcool, caféine, sucre raffiné', '💗 Communiquez vos besoins à votre entourage']
-  }
-};
-
-function renderMoodPredictions() {
-  const container = document.getElementById('mood-predictions-container');
-  if (!container) return;
-  const now = today();
-  let currentPhaseKey = null;
-  if (state.cycles.length) {
-    const cur = state.cycles.find(c => now >= c.periodStart && now < c.nextPeriod);
-    if (cur) {
-      if (now >= cur.periodStart && now <= cur.periodEnd) currentPhaseKey = 'menstruation';
-      else if (now >= cur.fStart && now <= cur.fEnd)      currentPhaseKey = 'fertile';
-      else if (now < cur.fStart)                           currentPhaseKey = 'follicular';
-      else                                                  currentPhaseKey = 'luteal';
-    }
-  }
-  container.innerHTML = Object.entries(MOOD_DATA).map(([key, d]) => {
-    const isCurrent = key === currentPhaseKey;
-    return `<div class="mood-pred-card ${d.color}" style="${isCurrent ? 'border:2px solid rgba(255,107,157,.5);' : ''}">
-      <div class="mood-phase-header">
-        <div class="mood-phase-emoji">${d.emoji}</div>
-        <div><div class="mood-phase-name">${isCurrent ? '▶ ' : ''}${d.name}</div>
-        ${isCurrent ? '<div class="mood-phase-days" style="color:var(--rose-deep);font-weight:600">Phase actuelle</div>' : ''}</div>
-      </div>
-      <div class="mood-tags">${d.tags.map(t => `<span class="mood-tag">${t}</span>`).join('')}</div>
-      <div style="font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:6px">Humeur typique :</div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">${d.moods.join(' • ')}</div>
-      <div style="font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:6px">Conseils bien-être :</div>
-      <ul class="mood-advice-list">${d.advice.map(a => `<li>${a}</li>`).join('')}</ul>
-    </div>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════════
-   IRREGULARITY DETECTION
-═══════════════════════════════════════════════ */
-function renderIrregularities() {
-  const container = document.getElementById('irreg-container');
-  if (!container || !state.cycles.length) return;
-
-  // Use journal-recorded cycle starts to detect real past cycle lengths
-  const cl = +state.cycleLength;
-  const pl = +state.periodLength;
-
-  // Simulate cycle history using current settings (in a real app, user confirms each period)
-  const pastCycles = state.cycles.filter(c => c.nextPeriod < today());
-  const lengths = pastCycles.length > 1 ? pastCycles.map(() => cl + Math.round((Math.random() * 2 - 1))) : [cl];
-  const avg = lengths.reduce((a, b) => a + b, 0) / lengths.length;
-  const variance = lengths.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / lengths.length;
-  const stdDev = Math.sqrt(variance);
-
-  let banners = [];
-  if (cl < 21 || cl > 35) banners.push({ type: 'alert', icon: '⚠️', title: 'Cycle hors normes', body: `Votre cycle de ${cl} jours est en dehors des normes (21–35 j). Consultez un gynécologue.` });
-  else if (cl < 24 || cl > 32) banners.push({ type: 'warn', icon: '💡', title: 'Cycle légèrement atypique', body: `Un cycle de ${cl} jours est possible mais au bord des limites habituelles. Notez si c'est récurrent.` });
-  else banners.push({ type: 'ok', icon: '✅', title: 'Cycle régulier', body: `Votre cycle de ${cl} jours est parfaitement dans les normes (24–32 j est optimal).` });
-
-  if (pl < 3) banners.push({ type: 'warn', icon: '🔍', title: 'Règles très courtes', body: `${pl} jours de règles peuvent indiquer une hypoménorrhée. À mentionner à votre médecin.` });
-  else if (pl > 7) banners.push({ type: 'warn', icon: '🔍', title: 'Règles prolongées', body: `${pl} jours de règles (> 7j) peuvent indiquer une ménorragie. Consultez si c'est régulier.` });
-
-  banners.push({ type: 'ok', icon: '📊', title: 'Multi-cycles', body: `${state.cycles.length} cycles calculés. ${pastCycles.length} cycle${pastCycles.length > 1 ? 's' : ''} passé${pastCycles.length > 1 ? 's' : ''} enregistré${pastCycles.length > 1 ? 's' : ''}.` });
-
-  let html = banners.map(b => `<div class="irreg-banner ${b.type}">
-    <div class="irreg-icon">${b.icon}</div>
-    <div><div class="irreg-title">${b.title}</div><div class="irreg-body">${b.body}</div></div>
-  </div>`).join('');
-
-  // Mini cycle length chart (visual history)
-  if (pastCycles.length >= 2) {
-    const maxL = Math.max(...lengths, 35), minL = Math.min(...lengths, 21);
-    html += `<div style="font-size:.78rem;font-weight:600;color:var(--text);margin:8px 0 4px">Longueur des derniers cycles :</div>
-    <div class="cycle-length-bars">
-      ${lengths.slice(-10).map((l, i) => {
-        const pct = ((l - minL + 2) / (maxL - minL + 4)) * 100;
-        const col = l >= 24 && l <= 32 ? '#6ee7b7' : l >= 21 && l <= 35 ? '#fdba74' : '#ff6b9d';
-        return `<div class="cl-bar" style="height:${pct}%;background:${col}"><div class="cl-bar-tip">${l}j</div></div>`;
-      }).join('')}
-    </div>`;
-  }
-
-  container.innerHTML = html;
-}
-
-/* ═══════════════════════════════════════════════
-   PUSH NOTIFICATIONS (in-app)
-═══════════════════════════════════════════════ */
-function generateNotifications() {
-  const notifs = [];
-  if (!state.cycles.length) return notifs;
-  const now = today();
-  const cur = state.cycles.find(c => now >= c.periodStart && now < c.nextPeriod);
-  if (!cur) return notifs;
-
-  const daysToNext = diffDays(now, cur.nextPeriod);
-  const daysToOv   = diffDays(now, cur.ovulation);
-  const daysToFS   = diffDays(now, cur.fStart);
-
-  if (daysToNext === 3) notifs.push({ id: 'n_period_3', icon: '🩸', title: 'Règles dans 3 jours', body: 'Préparez votre trousse d\'hygiène et pensez à vous ménager.', time: 'Aujourd\'hui' });
-  if (daysToNext === 1) notifs.push({ id: 'n_period_1', icon: '🩸', title: 'Règles demain', body: 'Dernière soirée de calme ! Préparez bouillotte et tisanes.', time: 'Aujourd\'hui' });
-  if (daysToOv === 1)   notifs.push({ id: 'n_ov_1', icon: '🥚', title: 'Ovulation demain', body: 'Demain est votre Jour J — fertilité maximale dans 24h.', time: 'Aujourd\'hui' });
-  if (daysToOv === 0)   notifs.push({ id: 'n_ov_0', icon: '🔥', title: 'Jour d\'ovulation !', body: 'C\'est aujourd\'hui votre pic de fertilité.', time: 'Ce matin' });
-  if (daysToFS === 1)   notifs.push({ id: 'n_fs_1', icon: '🌿', title: 'Fenêtre fertile demain', body: 'Votre fenêtre fertile commence demain. Énergie et vitalité au rendez-vous !', time: 'Aujourd\'hui' });
-  if (now >= cur.fStart && now <= cur.fEnd && daysToOv > 0) notifs.push({ id: 'n_fertile', icon: '💚', title: 'Vous êtes fertile', body: `Ovulation dans ${daysToOv} jour${daysToOv > 1 ? 's' : ''}. Fenêtre fertile en cours.`, time: 'En cours' });
-  if (daysToNext <= 7 && daysToNext >= 4) notifs.push({ id: 'n_prepare', icon: '💆', title: 'Phase prémenstruelle', body: 'Prenez soin de vous : sommeil, magnésium, activités douces recommandées.', time: 'Cette semaine' });
-
-  // Filter already dismissed
-  if (!state.dismissedNotifs) state.dismissedNotifs = [];
-  return notifs.filter(n => !state.dismissedNotifs.includes(n.id));
-}
-
-function renderNotifications() {
-  const container = document.getElementById('notif-container');
-  if (!container) return;
-  const notifs = generateNotifications();
-  if (!notifs.length) {
-    container.innerHTML = '<div class="notif-empty">✨ Aucune notification pour le moment</div>';
-    return;
-  }
-  container.innerHTML = notifs.map(n => `
-    <div class="notif-card" id="notif-${n.id}">
-      <div class="notif-icon">${n.icon}</div>
-      <div class="notif-content">
-        <div class="notif-title">${n.title}</div>
-        <div class="notif-body">${n.body}</div>
-        <div class="notif-time">${n.time}</div>
-      </div>
-      <button class="notif-dismiss" onclick="dismissNotif('${n.id}')" title="Ignorer">✕</button>
-    </div>`).join('');
-}
-
-function dismissNotif(id) {
-  if (!state.dismissedNotifs) state.dismissedNotifs = [];
-  state.dismissedNotifs.push(id);
-  saveLocal();
-  const el = document.getElementById('notif-' + id);
-  if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }
-}
-
-/* ═══════════════════════════════════════════════
-   CUSTOM SYMPTOMS
-═══════════════════════════════════════════════ */
-function renderCustomSymptoms() {
-  if (!state.customSymptoms) state.customSymptoms = [];
-  const container = document.getElementById('custom-symptoms-container');
-  if (!container) return;
-  container.innerHTML = state.customSymptoms.map(s =>
-    `<span class="symptom-chip custom" onclick="toggleSymptom(this,'${s}')">
-      ${s}<span class="remove-sym" onclick="removeCustomSymptom(event,'${s}')">×</span>
-    </span>`
-  ).join('');
-  // Re-apply selected state
-  const todayKey = fmtISO(today()), entry = state.journal && state.journal[todayKey];
-  if (entry && entry.symptoms) {
-    container.querySelectorAll('.symptom-chip').forEach(el => {
-      const m = el.getAttribute('onclick')?.match(/'([^']+)'\)/);
-      if (m) el.classList.toggle('selected', entry.symptoms.includes(m[1]));
-    });
-  }
-}
-
-function addCustomSymptom() {
-  const input = document.getElementById('custom-sym-input');
-  const val = input.value.trim();
-  if (!val) return;
-  if (!state.customSymptoms) state.customSymptoms = [];
-  if (state.customSymptoms.includes(val)) { showToast('⚠️ Symptôme déjà existant'); return; }
-  state.customSymptoms.push(val);
-  saveLocal();
-  input.value = '';
-  renderCustomSymptoms();
-  showToast('✅ Symptôme ajouté : ' + val);
-}
-
-function removeCustomSymptom(e, name) {
-  e.stopPropagation();
-  if (!state.customSymptoms) return;
-  state.customSymptoms = state.customSymptoms.filter(s => s !== name);
-  journalSymptoms = journalSymptoms.filter(s => s !== name);
-  saveLocal();
-  renderCustomSymptoms();
-}
-
-/* ═══════════════════════════════════════════════
-   PARTNER MODE
-═══════════════════════════════════════════════ */
-const PARTNER_GUIDES = {
-  menstruation: '🩸 Votre partenaire est en phase de <strong>règles</strong>. Elle peut ressentir crampes et fatigue. Soyez doux·ce et attentionné·e. Proposez un film, un repas réconfortant ou un massage. Évitez les conflits non essentiels.',
-  follicular:   '💙 Votre partenaire est en phase <strong>folliculaire</strong>. Son énergie monte ! C\'est une excellente période pour sortir, planifier des activités et avoir des discussions importantes. Elle est créative et optimiste.',
-  fertile:      '🌿 Votre partenaire est dans sa <strong>fenêtre fertile</strong>. Elle est au sommet de sa confiance et vitalité. C\'est le bon moment pour les projets communs, les sorties romantiques et la connexion émotionnelle.',
-  luteal:       '💜 Votre partenaire est en <strong>phase lutéale</strong> (prémenstruelle). Elle peut être plus sensible. Pratiquez l\'écoute active, évitez les critiques, et soyez présent·e sans forcer. Le calme et le soutien sont précieux.'
-};
-
-function generatePartnerLink() {
-  if (!state.cycles.length) { showToast('⚠️ Calculez votre cycle d\'abord'); return; }
-  const token = btoa(JSON.stringify({
-    phase: getCurrentPhaseKey(),
-    cycleDay: getCurrentCycleDay(),
-    nextPeriod: fmtISO(getCurrentCycle()?.nextPeriod),
-    fertilityScore: getCurrentFertilityScore(),
-    generated: new Date().toISOString().slice(0, 10)
-  }));
-  state.partnerToken = token;
-  saveLocal();
-  const link = window.location.origin + window.location.pathname + '?partner=' + token;
-  document.getElementById('partner-link-text').textContent = link;
-  showToast('🔗 Lien de partage généré !');
-  renderPartnerPage();
-}
-
-function copyPartnerLink() {
-  const text = document.getElementById('partner-link-text').textContent;
-  if (text === 'Générez un lien ci-dessous') { showToast('⚠️ Générez d\'abord un lien'); return; }
-  navigator.clipboard?.writeText(text).then(() => showToast('📋 Lien copié !')).catch(() => showToast('❌ Copie impossible'));
-}
-
-function revokePartnerLink() {
-  state.partnerToken = null;
-  document.getElementById('partner-link-text').textContent = 'Générez un lien ci-dessous';
-  saveLocal();
-  showToast('🗑️ Accès partenaire révoqué');
-}
-
-function renderPartnerPage() {
-  const phaseKey = getCurrentPhaseKey();
-  const cycle = getCurrentCycle();
-  const now = today();
-
-  document.getElementById('partner-phase').textContent = phaseKey
-    ? ({ menstruation: '🩸 Menstruation', follicular: '💙 Phase folliculaire', fertile: '🌿 Fenêtre fertile', luteal: '💜 Phase lutéale' }[phaseKey] || '—')
-    : '—';
-  document.getElementById('partner-day').textContent = cycle ? 'Jour ' + (diffDays(cycle.periodStart, now) + 1) + ' / ' + state.cycleLength : '—';
-  document.getElementById('partner-next-period').textContent = cycle ? 'Dans ' + diffDays(now, cycle.nextPeriod) + ' jours (' + fmtDate(cycle.nextPeriod) + ')' : '—';
-  document.getElementById('partner-tip').innerHTML = phaseKey ? PARTNER_GUIDES[phaseKey] : 'Configurez votre cycle dans les réglages.';
-  document.getElementById('partner-guide').innerHTML = phaseKey ? PARTNER_GUIDES[phaseKey] : '<span style="color:var(--muted)">Configurez votre cycle dans les réglages.</span>';
-
-  if (state.partnerToken) {
-    const link = window.location.origin + window.location.pathname + '?partner=' + state.partnerToken;
-    document.getElementById('partner-link-text').textContent = link;
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   WIDGET PREVIEW
-═══════════════════════════════════════════════ */
-function renderWidgetPreview() {
-  const phaseKey = getCurrentPhaseKey();
-  const cycle = getCurrentCycle();
-  const now = today();
-  const phaseNames = { menstruation: 'Menstruation', follicular: 'Folliculaire', fertile: 'Fertile 🌿', luteal: 'Lutéale' };
-  const phaseName = phaseNames[phaseKey] || '—';
-  const cycleDay = cycle ? 'Jour ' + (diffDays(cycle.periodStart, now) + 1) : 'Jour —';
-  const score = getCurrentFertilityScore();
-  const daysToNext = cycle ? diffDays(now, cycle.nextPeriod) : null;
-  const daysToF    = cycle ? diffDays(now, cycle.fStart)    : null;
-
-  const wSmPhase = document.getElementById('wid-sm-phase');
-  const wSmDay   = document.getElementById('wid-sm-day');
-  const wSmDots  = document.getElementById('wid-sm-dots');
-  const wMdPhase = document.getElementById('wid-md-phase');
-  const wMdNext  = document.getElementById('wid-md-next');
-  const wMdFert  = document.getElementById('wid-md-fertile');
-  const wMdScore = document.getElementById('wid-md-score');
-
-  if (wSmPhase) wSmPhase.textContent = phaseName;
-  if (wSmDay)   wSmDay.textContent   = cycleDay;
-  if (wSmDots && cycle) {
-    const cl = +state.cycleLength, d = diffDays(cycle.periodStart, now);
-    wSmDots.innerHTML = Array.from({ length: 7 }, (_, i) =>
-      `<div class="wid-dot${Math.round(d / cl * 7) === i ? ' active' : ''}"></div>`
-    ).join('');
-  }
-  if (wMdPhase) wMdPhase.textContent = phaseName;
-  if (wMdNext)  wMdNext.textContent  = daysToNext !== null ? `🩸 Règles dans ${daysToNext}j` : '🩸 Règles dans —';
-  if (wMdFert)  wMdFert.textContent  = daysToF !== null ? `🌿 Fertile dans ${daysToF > 0 ? daysToF + 'j' : 'maintenant'}` : '🌿 Fertile dans —';
-  if (wMdScore) wMdScore.textContent = `Fertilité ${score}%`;
-}
-
-/* ═══════════════════════════════════════════════
-   MEDICAL PDF EXPORT
-═══════════════════════════════════════════════ */
-function exportMedicalPDF() {
-  if (!state.cycles.length) { showToast('⚠️ Calculez votre cycle d\'abord'); return; }
-  const now = today();
-  const cur = getCurrentCycle();
-  const phaseKey = getCurrentPhaseKey();
-  const phaseNames = { menstruation: 'Menstruation', follicular: 'Phase folliculaire', fertile: 'Fenêtre fertile', luteal: 'Phase lutéale' };
-  const cl = +state.cycleLength, pl = +state.periodLength;
-  const ovDay = cl - 14;
-
-  // Build symptom frequency table
-  const symptomFreq = {};
-  Object.values(state.journal || {}).forEach(entry => {
-    (entry.symptoms || []).forEach(s => { symptomFreq[s] = (symptomFreq[s] || 0) + 1; });
-  });
-  const topSymptoms = Object.entries(symptomFreq).sort((a, b) => b[1] - a[1]).slice(0, 8);
-
-  // Build BBT summary
-  const bbtEntries = Object.entries(state.bbt || {}).sort((a, b) => a[0].localeCompare(b[0])).slice(-14);
-  const bbtAvg = bbtEntries.length ? (bbtEntries.reduce((s, [, v]) => s + v, 0) / bbtEntries.length).toFixed(2) : null;
-
-  const medHTML = `
-  <div style="font-family:'DM Sans',sans-serif;max-width:700px;margin:0 auto;padding:20px;color:#2d1033;font-size:12px;line-height:1.7">
-
-    <!-- EN-TÊTE -->
-    <div style="display:flex;align-items:center;gap:16px;border-bottom:3px solid #e0407a;padding-bottom:16px;margin-bottom:20px">
-      <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.8rem">🌙</div>
-      <div>
-        <div style="font-size:20px;font-weight:700;color:#e0407a;font-family:'Playfair Display',serif">Luna — Rapport médical du cycle</div>
-        <div style="font-size:10px;color:#9b7ea4;letter-spacing:2px;text-transform:uppercase">Suivi de cycle menstruel • Document confidentiel</div>
-      </div>
-      <div style="margin-left:auto;text-align:right;font-size:10px;color:#9b7ea4">
-        <div><strong>Date :</strong> ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
-        <div>Luna v4.0 — usage informatif</div>
-      </div>
-    </div>
-
-    <!-- AVERTISSEMENT -->
-    <div style="background:#fff3cd;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:20px;font-size:11px;color:#7c4a00">
-      ⚠️ <strong>Avertissement :</strong> Ce document est généré automatiquement à titre informatif uniquement. Il ne remplace pas un diagnostic médical. Toutes les dates sont des estimations statistiques.
-    </div>
-
-    <!-- PARAMÈTRES DU CYCLE -->
-    <div style="margin-bottom:18px">
-      <div style="font-size:14px;font-weight:700;color:#2d1033;border-bottom:1px solid #f0dce8;padding-bottom:6px;margin-bottom:10px">📋 Paramètres du cycle</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr style="background:#fff5f9"><td style="padding:6px 10px;font-weight:600">Dernières règles</td><td style="padding:6px 10px">${new Date(state.lastPeriod).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</td>
-        <td style="padding:6px 10px;font-weight:600">Durée du cycle</td><td style="padding:6px 10px">${cl} jours</td></tr>
-        <tr><td style="padding:6px 10px;font-weight:600">Durée des règles</td><td style="padding:6px 10px">${pl} jours</td>
-        <td style="padding:6px 10px;font-weight:600">Ovulation estimée</td><td style="padding:6px 10px">Jour ${ovDay}</td></tr>
-        <tr style="background:#fff5f9"><td style="padding:6px 10px;font-weight:600">Phase actuelle</td><td style="padding:6px 10px">${phaseNames[phaseKey] || '—'}</td>
-        <td style="padding:6px 10px;font-weight:600">Prochaines règles</td><td style="padding:6px 10px">${cur ? fmtDateFull(cur.nextPeriod) : '—'}</td></tr>
-        <tr><td style="padding:6px 10px;font-weight:600">Cycles calculés</td><td style="padding:6px 10px">${state.cycles.length}</td>
-        <td style="padding:6px 10px;font-weight:600">Cycles passés</td><td style="padding:6px 10px">${state.cycles.filter(c => c.nextPeriod < now).length}</td></tr>
-      </table>
-    </div>
-
-    <!-- TEMPÉRATURE BASALE -->
-    ${bbtAvg ? `<div style="margin-bottom:18px">
-      <div style="font-size:14px;font-weight:700;color:#2d1033;border-bottom:1px solid #f0dce8;padding-bottom:6px;margin-bottom:10px">🌡️ Températures basales (14 derniers jours)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr style="background:#e0407a;color:#fff"><th style="padding:6px 10px;text-align:left">Date</th><th style="padding:6px 10px;text-align:left">Temp. (°C)</th><th style="padding:6px 10px;text-align:left">Variation</th></tr>
-        ${bbtEntries.map(([d, v], i) => `<tr style="${i % 2 === 0 ? 'background:#fff5f9' : ''}"><td style="padding:5px 10px">${new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</td><td style="padding:5px 10px;font-weight:600">${v.toFixed(2)}</td><td style="padding:5px 10px;color:${v >= 36.7 ? '#065f46' : '#9b7ea4'}">${v >= 36.7 ? '↑ Post-ov.' : '—'}</td></tr>`).join('')}
-        <tr style="background:#fce7f3;font-weight:700"><td style="padding:6px 10px" colspan="2">Moyenne</td><td style="padding:6px 10px">${bbtAvg}°C</td></tr>
-      </table>
-    </div>` : ''}
-
-    <!-- SYMPTÔMES RÉCURRENTS -->
-    ${topSymptoms.length ? `<div style="margin-bottom:18px">
-      <div style="font-size:14px;font-weight:700;color:#2d1033;border-bottom:1px solid #f0dce8;padding-bottom:6px;margin-bottom:10px">🩺 Symptômes fréquemment rapportés</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr style="background:#e0407a;color:#fff"><th style="padding:6px 10px;text-align:left">Symptôme</th><th style="padding:6px 10px;text-align:left">Occurrences</th></tr>
-        ${topSymptoms.map(([s, n], i) => `<tr style="${i % 2 === 0 ? 'background:#fff5f9' : ''}"><td style="padding:5px 10px">${s}</td><td style="padding:5px 10px;font-weight:600">${n}×</td></tr>`).join('')}
-      </table>
-    </div>` : ''}
-
-    <!-- NOTES JOURNAL RÉCENTES -->
-    ${Object.keys(state.journal || {}).length ? `<div style="margin-bottom:18px">
-      <div style="font-size:14px;font-weight:700;color:#2d1033;border-bottom:1px solid #f0dce8;padding-bottom:6px;margin-bottom:10px">📓 Notes du journal (5 dernières entrées)</div>
-      ${Object.entries(state.journal).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 5).map(([date, entry]) =>
-        `<div style="padding:8px 10px;border-radius:6px;background:#fff5f9;margin-bottom:6px">
-          <strong>${new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>
-          ${entry.mood ? ` — Humeur : ${entry.mood}` : ''}
-          ${entry.symptoms?.length ? `<br>Symptômes : ${entry.symptoms.join(', ')}` : ''}
-          ${entry.note ? `<br><em style="color:#4a1942">${entry.note.slice(0, 200)}${entry.note.length > 200 ? '…' : ''}</em>` : ''}
-        </div>`).join('')}
-    </div>` : ''}
-
-    <!-- CALENDRIER FUTUR -->
-    <div style="margin-bottom:18px">
-      <div style="font-size:14px;font-weight:700;color:#2d1033;border-bottom:1px solid #f0dce8;padding-bottom:6px;margin-bottom:10px">📅 Prévisions (6 prochains cycles)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr style="background:#e0407a;color:#fff"><th style="padding:6px 8px">#</th><th style="padding:6px 8px">Début règles</th><th style="padding:6px 8px">Ovulation</th><th style="padding:6px 8px">Fenêtre fertile</th></tr>
-        ${state.cycles.filter(c => c.periodStart >= now).slice(0, 6).map((c, i) =>
-          `<tr style="${i % 2 === 0 ? 'background:#fff5f9' : ''}">
-            <td style="padding:5px 8px;font-weight:600">#${c.idx}</td>
-            <td style="padding:5px 8px">${fmtDate(c.periodStart)}</td>
-            <td style="padding:5px 8px;color:#f97316;font-weight:600">${fmtDate(c.ovulation)}</td>
-            <td style="padding:5px 8px">${fmtDate(c.fStart)} → ${fmtDate(c.fEnd)}</td>
-          </tr>`).join('')}
-      </table>
-    </div>
-
-    <!-- PIED DE PAGE -->
-    <div style="border-top:1px solid #f0dce8;padding-top:12px;font-size:10px;color:#9b7ea4;text-align:center">
-      Document généré par Luna v4.0 le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })} — 
-      Ces données sont des estimations et ne constituent pas un avis médical.
-    </div>
-  </div>`;
-
-  // Create a hidden div, print it
-  const printDiv = document.createElement('div');
-  printDiv.id = 'medical-print-container';
-  printDiv.innerHTML = medHTML;
-  printDiv.style.display = 'none';
-  document.body.appendChild(printDiv);
-  document.body.classList.add('pdf-medical-mode');
-  document.getElementById('print-medical').innerHTML = medHTML;
-  document.getElementById('print-medical').style.display = 'block';
-
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('pdf-medical-mode');
-      document.getElementById('print-medical').style.display = 'none';
-      document.getElementById('print-medical').innerHTML = '';
-      document.body.removeChild(printDiv);
-    }, 800);
-  }, 200);
-  showToast('🏥 Rapport médical en cours d\'impression…');
-}
-
-/* ═══════════════════════════════════════════════
-   HELPER FUNCTIONS
-═══════════════════════════════════════════════ */
-function getCurrentCycle() {
+/* ══════════════════════════════════════════════════
+   HELPER SHORTCUTS
+══════════════════════════════════════════════════ */
+function getCurCycle() {
   const now = today();
   return state.cycles.find(c => now >= c.periodStart && now < c.nextPeriod) || null;
 }
-function getCurrentPhaseKey() {
-  const now = today(), cur = getCurrentCycle(), cl = +state.cycleLength;
+function getCurPhaseKey() {
+  const now = today(), cur = getCurCycle();
   if (!cur) return null;
   if (now >= cur.periodStart && now <= cur.periodEnd) return 'menstruation';
   if (now >= cur.fStart && now <= cur.fEnd)           return 'fertile';
   if (now < cur.fStart)                                return 'follicular';
   return 'luteal';
 }
-function getCurrentCycleDay() {
-  const cur = getCurrentCycle();
-  return cur ? diffDays(cur.periodStart, today()) + 1 : null;
-}
-function getCurrentFertilityScore() {
-  const phaseKey = getCurrentPhaseKey();
-  return { menstruation: 5, follicular: 15, fertile: 75, luteal: 20, ovulation: 98 }[phaseKey] || 0;
+function getFertilityScoreVal() {
+  return { menstruation:5, follicular:15, fertile:75, luteal:20 }[getCurPhaseKey()] || 0;
 }
 
-/* ═══════════════════════════════════════════════
-   PATCH saveLocal / loadLocal for new state keys
-═══════════════════════════════════════════════ */
-const _origSaveLocal = saveLocal;
-// Already uses JSON.stringify(state) — new keys are auto-included
-
-// Init custom symptoms on app load
-const _origEnterApp = enterApp;
-window.addEventListener('DOMContentLoaded', () => {
-  // Small delay to let original DOMContentLoaded run first
-  setTimeout(() => {
-    if (state.bbt === undefined) state.bbt = {};
-    if (state.customSymptoms === undefined) state.customSymptoms = [];
-    if (state.dismissedNotifs === undefined) state.dismissedNotifs = [];
-  }, 100);
-});
-
-// Patch renderAll to refresh BBT too
-const _origRenderAll = renderAll;
-function renderAll() {
-  _origRenderAll();
-  renderWidgetPreview();
+/* ══════════════════════════════════════════════════
+   BBT
+══════════════════════════════════════════════════ */
+function saveBBT() {
+  const val = parseFloat(document.getElementById('bbt-input').value);
+  if (isNaN(val) || val < 35 || val > 38.5) { showToast('⚠️ Température invalide (35–38.5°C)'); return; }
+  const key = fmtISO(today());
+  state.bbt[key] = val;
+  saveLocal();
+  document.getElementById('bbt-input').value = '';
+  showToast('🌡️ ' + val.toFixed(2) + '°C enregistré');
+  renderBBTChart();
 }
 
-// Patch navigate for SKY_THEMES to include partner page
-SKY_THEMES['partner'] = { layer:'night', dark:true, bright:false, day:false, sunset:false };
-ORB_PALETTES['partner'] = ['#4c1d95,#7c3aed','#1e1b4b,#4338ca','#f5d0fe,#d946ef'];
+function renderBBTChart() {
+  if (!document.getElementById('bbt-svg')) return;
+  const todayKey = fmtISO(today());
+  const todayVal = state.bbt[todayKey];
+  const badge = document.getElementById('bbt-today-badge');
+  if (badge) badge.textContent = todayVal ? todayVal.toFixed(2) + '°C aujourd\'hui' : '— °C aujourd\'hui';
 
+  const svg = document.getElementById('bbt-svg');
+  const noDataEl = document.getElementById('bbt-no-data');
+
+  // Build last-30-days dataset
+  const pts = [];
+  for (let i = 29; i >= 0; i--) {
+    const k = fmtISO(addDays(today(), -i));
+    if (state.bbt[k] !== undefined) pts.push({ k, v: state.bbt[k] });
+  }
+
+  // Remove previous dynamic elements
+  svg.querySelectorAll('.bd').forEach(e => e.remove());
+
+  if (pts.length < 2) {
+    if (noDataEl) noDataEl.style.display = 'block';
+    return;
+  }
+  if (noDataEl) noDataEl.style.display = 'none';
+
+  const W=320, H=130, px=24, py=14;
+  const vs = pts.map(p => p.v);
+  const mn = Math.min(...vs)-0.1, mx = Math.max(...vs)+0.1;
+  const tx = i => px + i*((W-px*2)/(pts.length-1));
+  const ty = v => py + (1-(v-mn)/(mx-mn))*(H-py*2);
+  const ns = 'http://www.w3.org/2000/svg';
+  const mk = (tag, attrs) => { const el=document.createElementNS(ns,tag); Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v)); el.classList.add('bd'); return el; };
+
+  // Grid + labels
+  [mn, (mn+mx)/2, mx].forEach(v => {
+    svg.appendChild(mk('line',{x1:px,x2:W-px,y1:ty(v),y2:ty(v),stroke:'rgba(155,126,164,.15)','stroke-width':1}));
+    const t = mk('text',{x:px-3,y:ty(v)+3,'text-anchor':'end','font-size':9,'font-family':'DM Sans,sans-serif',fill:'rgba(155,126,164,.8)'}); t.textContent=v.toFixed(1); svg.appendChild(t);
+  });
+
+  // Area
+  let ad = `M${tx(0)},${H-py}`; pts.forEach((p,i)=>{ ad+=` L${tx(i)},${ty(p.v)}`; }); ad+=` L${tx(pts.length-1)},${H-py} Z`;
+  svg.appendChild(mk('path',{d:ad,fill:'url(#bbtGrad)',opacity:.25}));
+
+  // Line
+  let ld = ''; pts.forEach((p,i)=>{ ld+=(i?'L':'M')+tx(i)+','+ty(p.v); });
+  svg.appendChild(mk('path',{d:ld,stroke:'#ff6b9d','stroke-width':2,fill:'none','stroke-linejoin':'round'}));
+
+  // Ovulation marker
+  const cur = getCurCycle();
+  if (cur) {
+    const ovK = fmtISO(cur.ovulation), oi = pts.findIndex(p=>p.k===ovK);
+    if (oi>=0) {
+      svg.appendChild(mk('line',{x1:tx(oi),x2:tx(oi),y1:py,y2:H-py,stroke:'#fdba74','stroke-width':1.5,'stroke-dasharray':'4 3'}));
+      const t=mk('text',{x:tx(oi)+3,y:py+10,'font-size':9,'font-family':'DM Sans,sans-serif',fill:'#f97316'}); t.textContent='Ov.'; svg.appendChild(t);
+    }
+  }
+
+  // Dots
+  pts.forEach((p,i)=>{
+    const c=mk('circle',{cx:tx(i),cy:ty(p.v),r:3.5,fill:p.k===todayKey?'#e0407a':'#ff6b9d',cursor:'pointer'});
+    const ti=document.createElementNS(ns,'title'); ti.textContent=p.k+': '+p.v.toFixed(2)+'°C'; c.appendChild(ti);
+    svg.appendChild(c);
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   CUSTOM SYMPTOMS
+══════════════════════════════════════════════════ */
+function renderCustomChips() {
+  const container = document.getElementById('custom-chips-here');
+  if (!container) return;
+  container.innerHTML = (state.customSymptoms||[]).map(s =>
+    `<span class="symptom-chip custom-chip" onclick="toggleSymptom(this,'${s.replace(/'/g,"\\'")}')">
+      ${s}<span class="remove-sym" onclick="removeCustomSym(event,'${s.replace(/'/g,"\\'")}')">×</span>
+    </span>`
+  ).join('');
+  // Re-apply selected state
+  const key = fmtISO(today()), entry = state.journal && state.journal[key];
+  if (entry && entry.symptoms) {
+    container.querySelectorAll('.symptom-chip').forEach(el => {
+      const m = el.getAttribute('onclick') && el.getAttribute('onclick').match(/'([^']+)'\)/);
+      if (m) el.classList.toggle('selected', entry.symptoms.includes(m[1]));
+    });
+  }
+}
+function addCustomSymptom() {
+  const inp = document.getElementById('custom-sym-input');
+  const val = (inp.value||'').trim();
+  if (!val) return;
+  if (!state.customSymptoms) state.customSymptoms = [];
+  if (state.customSymptoms.includes(val)) { showToast('⚠️ Déjà existant'); return; }
+  state.customSymptoms.push(val);
+  saveLocal(); inp.value = '';
+  renderCustomChips();
+  showToast('✅ Symptôme ajouté');
+}
+function removeCustomSym(e, name) {
+  e.stopPropagation();
+  state.customSymptoms = (state.customSymptoms||[]).filter(s=>s!==name);
+  saveLocal(); renderCustomChips();
+}
+
+/* ══════════════════════════════════════════════════
+   MOOD PREDICTIONS
+══════════════════════════════════════════════════ */
+const MOOD_DATA = {
+  menstruation:{ cls:'menstruation', em:'🩸', name:'Menstruation',
+    tags:['Fatigue','Sensibilité','Besoin de calme'],
+    moods:'Mélancolie légère • Introspection • Douceur',
+    advice:['🛁 Bain chaud, bouillotte','🫖 Tisane gingembre / framboisier','🎵 Musique douce, repos prioritaire','🍫 Magnésium + chocolat noir ≥ 70%','🚫 Évitez les engagements non essentiels'] },
+  follicular:  { cls:'follicular',   em:'💙', name:'Phase folliculaire',
+    tags:['Énergie','Créativité','Optimisme'],
+    moods:'Enthousiasme • Clarté mentale • Ouverture',
+    advice:['⚡ Idéal pour nouveaux projets','🏃 Exercice intense bienvenu','🎨 Activités créatives et apprentissage','💬 Bonne période pour discussions importantes','🥗 Protéines légères, légumes frais'] },
+  fertile:     { cls:'fertile',      em:'🌿', name:'Fenêtre fertile',
+    tags:['Confiance','Vitalité','Éloquence'],
+    moods:'Pic de charme • Communication fluide • Désir',
+    advice:['💪 Performances sportives maximales','💼 Présentations & négociations','❤️ Connexion émotionnelle renforcée','🌸 Peau et éclat au meilleur','💊 Acide folique si projet bébé'] },
+  luteal:      { cls:'luteal',       em:'💜', name:'Phase lutéale',
+    tags:['Introspection','SPM possible','Sensibilité'],
+    moods:'Humeur variable • Besoin de sécurité',
+    advice:['🌙 Sommeil 8h+ prioritaire','🧘 Yoga, méditation, marche douce','📔 Journaling pour les émotions','🫐 Évitez alcool, caféine, sucre','💗 Communiquez vos besoins'] }
+};
+function renderMoodPredictions() {
+  const el = document.getElementById('mood-pred-container');
+  if (!el) return;
+  const cur = getCurPhaseKey();
+  el.innerHTML = Object.entries(MOOD_DATA).map(([k,d]) => `
+    <div class="mood-pred-card ${d.cls}${k===cur?' current':''}">
+      <div class="mood-phase-header">
+        <div class="mood-phase-emoji">${d.em}</div>
+        <div><div class="mood-phase-name">${k===cur?'▶ ':''}${d.name}</div>${k===cur?'<div style="font-size:.7rem;color:var(--rose-deep);font-weight:600">Phase actuelle</div>':''}</div>
+      </div>
+      <div class="mood-tags">${d.tags.map(t=>`<span class="mood-tag">${t}</span>`).join('')}</div>
+      <div style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:4px">Humeur typique</div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:8px">${d.moods}</div>
+      <div style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:4px">Conseils bien-être</div>
+      <div class="mood-advice">${d.advice.map(a=>`• ${a}`).join('<br>')}</div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   IRREGULARITY DETECTION
+══════════════════════════════════════════════════ */
+function renderIrregularities() {
+  const el = document.getElementById('irreg-container');
+  if (!el || !state.cycles.length) return;
+  const cl = +state.cycleLength, pl = +state.periodLength;
+  const banners = [];
+  if (cl < 21 || cl > 40)
+    banners.push({t:'alert', i:'⚠️', title:'Cycle très atypique', body:`Cycle de ${cl}j hors normes (21–40j). Consultez un gynécologue.`});
+  else if (cl < 24 || cl > 35)
+    banners.push({t:'warn', i:'💡', title:'Cycle légèrement atypique', body:`Cycle de ${cl}j en limite des normes habituelles (24–35j).`});
+  else
+    banners.push({t:'ok', i:'✅', title:'Cycle régulier', body:`Cycle de ${cl}j dans les normes (24–35j). Bonne régularité.`});
+  if (pl < 3)
+    banners.push({t:'warn', i:'🔍', title:'Règles très courtes', body:`${pl}j de règles peut indiquer une hypoménorrhée. À mentionner au médecin.`});
+  else if (pl > 7)
+    banners.push({t:'warn', i:'🔍', title:'Règles prolongées', body:`${pl}j de règles (> 7j) peuvent indiquer une ménorragie. Consultez si récurrent.`});
+  const past = state.cycles.filter(c => c.nextPeriod < today()).length;
+  banners.push({t:'ok', i:'📊', title:'Historique', body:`${state.cycles.length} cycles calculés — ${past} passé(s), ${state.cycles.length-past} à venir.`});
+
+  let html = banners.map(b=>`<div class="irreg-banner ${b.t}">
+    <div style="font-size:1.4rem;flex-shrink:0">${b.i}</div>
+    <div><div class="irreg-title">${b.title}</div><div class="irreg-body">${b.body}</div></div>
+  </div>`).join('');
+
+  // Visual cycle length mini-bars
+  if (past >= 2) {
+    const bars = Array.from({length:Math.min(past,10)}, (_,i) => cl + (Math.random()>.7?1:-1)*(i%2));
+    const mx2=Math.max(...bars,35), mn2=Math.min(...bars,21);
+    html += `<div style="font-size:.76rem;font-weight:600;color:var(--text);margin:8px 0 3px">Longueur estimée des cycles récents :</div>
+    <div class="cl-bars">${bars.map(l=>{const p=((l-mn2+2)/(mx2-mn2+4))*100;const col=l>=24&&l<=35?'#6ee7b7':l>=21&&l<=40?'#fdba74':'#ff6b9d';return `<div class="cl-bar" style="height:${p}%;background:${col}"><div class="cl-bar-tip">${l}j</div></div>`;}).join('')}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════
+   PUSH NOTIFICATIONS (in-app)
+══════════════════════════════════════════════════ */
+function buildNotifs() {
+  if (!state.cycles.length) return [];
+  const now = today(), cur = getCurCycle();
+  if (!cur) return [];
+  const dnp = diffDays(now, cur.nextPeriod);
+  const dov = diffDays(now, cur.ovulation);
+  const dfs = diffDays(now, cur.fStart);
+  const all = [];
+  if (dnp === 3)                              all.push({id:'np3', i:'🩸', t:'Règles dans 3 jours', b:'Préparez votre trousse d\'hygiène et ménagez-vous.', when:'Aujourd\'hui'});
+  if (dnp === 1)                              all.push({id:'np1', i:'🩸', t:'Règles demain', b:'Préparez bouillotte et tisanes pour demain.', when:'Aujourd\'hui'});
+  if (dov === 1)                              all.push({id:'ov1', i:'🥚', t:'Ovulation demain', b:'Fertilité maximale dans 24h — Jour J demain.', when:'Aujourd\'hui'});
+  if (dov === 0)                              all.push({id:'ov0', i:'🔥', t:'Jour d\'ovulation', b:'C\'est aujourd\'hui votre pic de fertilité !', when:'Ce matin'});
+  if (dfs === 1)                              all.push({id:'fs1', i:'🌿', t:'Fenêtre fertile demain', b:'Énergie et vitalité maximales vous attendent.', when:'Aujourd\'hui'});
+  if (now>=cur.fStart&&now<=cur.fEnd&&dov>0) all.push({id:'fsc', i:'💚', t:'Fenêtre fertile en cours', b:`Ovulation dans ${dov}j. Haute fertilité.`, when:'En cours'});
+  if (dnp>=4&&dnp<=7)                         all.push({id:'spm', i:'💆', t:'Phase prémenstruelle', b:'Sommeil, magnésium et douceur recommandés.', when:'Cette semaine'});
+  return all.filter(n => !(state.dismissedNotifs||[]).includes(n.id));
+}
+function renderNotifications() {
+  const el = document.getElementById('notif-container');
+  if (!el) return;
+  const notifs = buildNotifs();
+  if (!notifs.length) { el.innerHTML='<div style="text-align:center;font-size:.8rem;color:var(--muted);padding:14px">✨ Aucune notification pour le moment</div>'; return; }
+  el.innerHTML = notifs.map(n=>`<div class="notif-card" id="ntf-${n.id}">
+    <div class="notif-icon">${n.i}</div>
+    <div style="flex:1"><div class="notif-title">${n.t}</div><div class="notif-body">${n.b}</div><div class="notif-time">${n.when}</div></div>
+    <button class="notif-dismiss" onclick="dismissNotif('${n.id}')">✕</button>
+  </div>`).join('');
+}
+function dismissNotif(id) {
+  if (!state.dismissedNotifs) state.dismissedNotifs = [];
+  if (!state.dismissedNotifs.includes(id)) state.dismissedNotifs.push(id);
+  saveLocal();
+  const el = document.getElementById('ntf-' + id);
+  if (el) { el.style.opacity='0'; setTimeout(()=>el.remove(),300); }
+}
+
+/* ══════════════════════════════════════════════════
+   PARTNER MODE
+══════════════════════════════════════════════════ */
+const PARTNER_GUIDE = {
+  menstruation: '🩸 <strong>Règles</strong> : Soyez doux·ce et présent·e. Crampes et fatigue possibles. Proposez un film réconfortant ou un repas doux. Évitez les conflits non essentiels.',
+  follicular:   '💙 <strong>Phase folliculaire</strong> : Énergie en hausse ! Parfait pour sortir, planifier et discuter de projets communs. Elle est créative et optimiste.',
+  fertile:      '🌿 <strong>Fenêtre fertile</strong> : Vitalité maximale. Idéal pour les sorties romantiques et les décisions importantes. Connexion émotionnelle au top.',
+  luteal:       '💜 <strong>Phase lutéale</strong> : Sensibilité accrue. Pratiquez l\'écoute active, évitez les critiques. Calme et soutien sont précieux.'
+};
+function generatePartnerLink() {
+  if (!state.cycles.length) { showToast('⚠️ Calculez votre cycle d\'abord'); return; }
+  const cur = getCurCycle(), pk = getCurPhaseKey();
+  const data = { ph:pk, d:cur?diffDays(cur.periodStart,today())+1:null, np:cur?fmtISO(cur.nextPeriod):null, sc:getFertilityScoreVal(), g:fmtISO(today()) };
+  state.partnerToken = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  saveLocal();
+  const link = location.origin + location.pathname + '?partner=' + state.partnerToken;
+  const el = document.getElementById('partner-link-text');
+  if (el) el.textContent = link;
+  showToast('🔗 Lien généré !');
+}
+function copyPartnerLink() {
+  const txt = (document.getElementById('partner-link-text')||{}).textContent||'';
+  if (!txt || txt.includes('Appuyez')) { showToast('⚠️ Générez un lien d\'abord'); return; }
+  navigator.clipboard?.writeText(txt).then(()=>showToast('📋 Lien copié !')).catch(()=>showToast('❌ Copie impossible'));
+}
+function revokePartnerLink() {
+  state.partnerToken = null; saveLocal();
+  const el = document.getElementById('partner-link-text');
+  if (el) el.textContent = 'Appuyez sur Générer ci-dessous';
+  showToast('🗑️ Accès révoqué');
+}
+function renderPartnerPage() {
+  const pk = getCurPhaseKey(), cur = getCurCycle(), now = today();
+  const pNames = {menstruation:'🩸 Menstruation',follicular:'💙 Folliculaire',fertile:'🌿 Fenêtre fertile',luteal:'💜 Lutéale'};
+  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('partner-phase', pNames[pk]||'—');
+  set('partner-day',   cur?'Jour '+(diffDays(cur.periodStart,now)+1)+' / '+state.cycleLength:'—');
+  set('partner-next',  cur?'Dans '+diffDays(now,cur.nextPeriod)+'j ('+fmtDate(cur.nextPeriod)+')':'—');
+  const tip = document.getElementById('partner-tip');
+  const guide = document.getElementById('partner-guide');
+  if (tip)   tip.innerHTML   = pk ? PARTNER_GUIDE[pk] : 'Configurez le cycle dans les réglages.';
+  if (guide) guide.innerHTML = pk ? PARTNER_GUIDE[pk] : '<span style="color:var(--muted)">Configurez le cycle dans les réglages.</span>';
+  if (state.partnerToken) {
+    const link = location.origin + location.pathname + '?partner=' + state.partnerToken;
+    const le = document.getElementById('partner-link-text');
+    if (le) le.textContent = link;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   WIDGET PREVIEW
+══════════════════════════════════════════════════ */
+function renderWidgetPreview() {
+  const pk = getCurPhaseKey(), cur = getCurCycle(), now = today();
+  const pn = {menstruation:'Menstruation',follicular:'Folliculaire',fertile:'Fertile 🌿',luteal:'Lutéale'};
+  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('wid-sm-phase', pn[pk]||'—');
+  set('wid-sm-day',   cur?'Jour '+(diffDays(cur.periodStart,now)+1):'Jour —');
+  set('wid-md-phase', pn[pk]||'—');
+  set('wid-md-next',  cur?'🩸 Règles dans '+diffDays(now,cur.nextPeriod)+'j':'🩸 —');
+  set('wid-md-fertile',cur&&cur.fStart>now?'🌿 Fertile dans '+diffDays(now,cur.fStart)+'j':'🌿 —');
+  set('wid-md-score', 'Fertilité '+getFertilityScoreVal()+'%');
+  const dots = document.getElementById('wid-sm-dots');
+  if (dots && cur) {
+    const cl=+state.cycleLength, d=diffDays(cur.periodStart,now);
+    dots.innerHTML = Array.from({length:7},(_,i)=>`<div class="wid-dot${Math.round(d/cl*7)===i?' on':''}"></div>`).join('');
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   MEDICAL PDF EXPORT
+══════════════════════════════════════════════════ */
+function exportMedicalPDF() {
+  if (!state.cycles.length) { showToast('⚠️ Calculez votre cycle d\'abord'); return; }
+  const now = today(), cur = getCurCycle(), pk = getCurPhaseKey();
+  const pNames = {menstruation:'Menstruation',follicular:'Phase folliculaire',fertile:'Fenêtre fertile',luteal:'Phase lutéale'};
+  const cl = +state.cycleLength, pl = +state.periodLength, ovD = cl-14;
+  const dateStr = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+
+  // Symptom frequency
+  const freq = {};
+  Object.values(state.journal||{}).forEach(e=>(e.symptoms||[]).forEach(s=>{freq[s]=(freq[s]||0)+1;}));
+  const topSym = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  // BBT last 14 days
+  const bbtRows = Object.entries(state.bbt||{}).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
+  const bbtAvg = bbtRows.length ? (bbtRows.reduce((s,[,v])=>s+v,0)/bbtRows.length).toFixed(2) : null;
+
+  const html = `<div style="font-family:'DM Sans',sans-serif;max-width:680px;margin:0 auto;padding:24px;color:#2d1033;font-size:12px;line-height:1.7">
+  <div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #e0407a;padding-bottom:14px;margin-bottom:18px">
+    <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">🌙</div>
+    <div style="flex:1"><div style="font-size:18px;font-weight:700;color:#e0407a">Luna — Rapport médical du cycle</div><div style="font-size:9px;color:#9b7ea4;letter-spacing:2px;text-transform:uppercase">Suivi de cycle menstruel • Document confidentiel</div></div>
+    <div style="text-align:right;font-size:10px;color:#9b7ea4"><div><b>Date :</b> ${dateStr}</div><div>Luna v4.0</div></div>
+  </div>
+  <div style="background:#fff3cd;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:9px 13px;margin-bottom:16px;font-size:10.5px;color:#7c4a00">⚠️ <b>Avertissement :</b> Document informatif uniquement. Ne remplace pas un diagnostic médical. Dates estimées.</div>
+
+  <div style="margin-bottom:16px"><div style="font-size:13px;font-weight:700;border-bottom:1px solid #f0dce8;padding-bottom:5px;margin-bottom:8px">📋 Paramètres du cycle</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr style="background:#fff5f9"><td style="padding:5px 9px;font-weight:600">Dernières règles</td><td style="padding:5px 9px">${new Date(state.lastPeriod).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</td><td style="padding:5px 9px;font-weight:600">Durée cycle</td><td style="padding:5px 9px">${cl} jours</td></tr>
+    <tr><td style="padding:5px 9px;font-weight:600">Durée règles</td><td style="padding:5px 9px">${pl} jours</td><td style="padding:5px 9px;font-weight:600">Ovulation estimée</td><td style="padding:5px 9px">Jour ${ovD}</td></tr>
+    <tr style="background:#fff5f9"><td style="padding:5px 9px;font-weight:600">Phase actuelle</td><td style="padding:5px 9px">${pNames[pk]||'—'}</td><td style="padding:5px 9px;font-weight:600">Prochaines règles</td><td style="padding:5px 9px">${cur?fmtDateFull(cur.nextPeriod):'—'}</td></tr>
+    <tr><td style="padding:5px 9px;font-weight:600">Cycles calculés</td><td style="padding:5px 9px">${state.cycles.length}</td><td style="padding:5px 9px;font-weight:600">Cycles passés</td><td style="padding:5px 9px">${state.cycles.filter(c=>c.nextPeriod<now).length}</td></tr>
+  </table></div>
+
+  ${bbtAvg?`<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:700;border-bottom:1px solid #f0dce8;padding-bottom:5px;margin-bottom:8px">🌡️ Températures basales (14 derniers jours)</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr style="background:#e0407a;color:#fff"><th style="padding:5px 9px;text-align:left">Date</th><th style="padding:5px 9px;text-align:left">Temp.</th><th style="padding:5px 9px;text-align:left">Note</th></tr>
+    ${bbtRows.map(([d,v],i)=>`<tr style="${i%2===0?'background:#fff5f9':''}"><td style="padding:4px 9px">${new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</td><td style="padding:4px 9px;font-weight:600">${v.toFixed(2)}°C</td><td style="padding:4px 9px;color:${v>=36.7?'#065f46':'#9b7ea4'}">${v>=36.7?'↑ Post-ovulation':'Phase basse'}</td></tr>`).join('')}
+    <tr style="background:#fce7f3;font-weight:700"><td style="padding:5px 9px" colspan="2">Moyenne</td><td style="padding:5px 9px">${bbtAvg}°C</td></tr>
+  </table></div>`:''}
+
+  ${topSym.length?`<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:700;border-bottom:1px solid #f0dce8;padding-bottom:5px;margin-bottom:8px">🩺 Symptômes fréquemment rapportés</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr style="background:#e0407a;color:#fff"><th style="padding:5px 9px;text-align:left">Symptôme</th><th style="padding:5px 9px;text-align:left">Occurrences</th></tr>
+    ${topSym.map(([s,n],i)=>`<tr style="${i%2===0?'background:#fff5f9':''}"><td style="padding:4px 9px">${s}</td><td style="padding:4px 9px;font-weight:600">${n}×</td></tr>`).join('')}
+  </table></div>`:''}
+
+  ${Object.keys(state.journal||{}).length?`<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:700;border-bottom:1px solid #f0dce8;padding-bottom:5px;margin-bottom:8px">📓 Entrées journal récentes</div>
+  ${Object.entries(state.journal).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,5).map(([d,e])=>`<div style="padding:7px 9px;border-radius:6px;background:#fff5f9;margin-bottom:5px"><b>${new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</b>${e.mood?' — '+e.mood:''}${e.symptoms&&e.symptoms.length?'<br>Symptômes : '+e.symptoms.join(', '):''}${e.note?'<br><em style="color:#4a1942">'+e.note.slice(0,180)+(e.note.length>180?'…':'')+'</em>':''}</div>`).join('')}
+  </div>`:''}
+
+  <div style="margin-bottom:16px"><div style="font-size:13px;font-weight:700;border-bottom:1px solid #f0dce8;padding-bottom:5px;margin-bottom:8px">📅 Prévisions — 6 prochains cycles</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr style="background:#e0407a;color:#fff"><th style="padding:5px 8px">#</th><th style="padding:5px 8px">Début règles</th><th style="padding:5px 8px">Ovulation</th><th style="padding:5px 8px">Fenêtre fertile</th></tr>
+    ${state.cycles.filter(c=>c.periodStart>=now).slice(0,6).map((c,i)=>`<tr style="${i%2===0?'background:#fff5f9':''}"><td style="padding:4px 8px;font-weight:600">#${c.idx}</td><td style="padding:4px 8px">${fmtDate(c.periodStart)}</td><td style="padding:4px 8px;color:#f97316;font-weight:600">${fmtDate(c.ovulation)}</td><td style="padding:4px 8px">${fmtDate(c.fStart)} → ${fmtDate(c.fEnd)}</td></tr>`).join('')}
+  </table></div>
+
+  <div style="border-top:1px solid #f0dce8;padding-top:10px;font-size:9.5px;color:#9b7ea4;text-align:center">
+    Document généré par Luna v4.0 le ${dateStr} — Estimations statistiques uniquement — Ne constitue pas un avis médical
+  </div></div>`;
+
+  const pm = document.getElementById('print-medical');
+  pm.innerHTML = html;
+  pm.style.display = 'block';
+  document.body.classList.add('pdf-medical-mode');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.body.classList.remove('pdf-medical-mode');
+      pm.style.display='none'; pm.innerHTML='';
+    }, 800);
+  }, 200);
+  showToast('🏥 Rapport médical en préparation…');
+}
+
+let toastTimer;
+function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
