@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Luna">
 <title>Luna — Cycle Féminin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -1969,84 +1971,219 @@ function exportDashboardPDF() {
 function exportCalendarPDF() {
   if (!state.cycles.length) { showToast('⚠️ Calculez votre cycle d\'abord'); return; }
 
-  const container = document.getElementById('pdf-all-calendars');
+  showToast('📸 Génération en cours…');
+
   const map = buildDayMap();
   const todayStr = fmtISO(today());
 
-  // Collecter tous les mois couverts par les cycles
+  // Collect all months covered by cycles
   const firstDate = state.cycles[0].periodStart;
   const lastDate  = state.cycles[state.cycles.length - 1].nextPeriod;
   const months = [];
-  let cur = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
-  const end = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 1);
-  while (cur < end) { months.push(new Date(cur)); cur.setMonth(cur.getMonth() + 1); }
+  let curM = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+  const endM = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 1);
+  while (curM < endM) { months.push(new Date(curM)); curM.setMonth(curM.getMonth() + 1); }
 
-  // En-tête + légende
   const genDate = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  let html = `
-    <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid #e0407a;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🌙</div>
-        <div>
-          <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#e0407a;line-height:1">Luna — Calendrier annuel du cycle</div>
-          <div style="font-size:.68rem;color:#9b7ea4">Généré le ${genDate} • ${state.cycles.length} cycles calculés</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.68rem;align-items:center">
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#ffd6e7;border-radius:2px;display:inline-block;border:1px solid #f0b0c8"></span>Règles</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#d1fae5;border-radius:2px;display:inline-block;border:1px solid #a0d8c0"></span>Fenêtre fertile</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#fde68a;border-radius:2px;display:inline-block;border:1px solid #f0c040"></span>Ovulation</span>
-        <span style="display:flex;align-items:center;gap:4px"><span style="width:11px;height:11px;border-radius:2px;display:inline-block;border:1.5px solid #e0407a"></span>Aujourd'hui</span>
-      </div>
+
+  // ── Build an off-screen render container ──
+  const wrap = document.createElement('div');
+  wrap.style.cssText = [
+    'position:fixed','top:-99999px','left:0',
+    'width:1240px',          // ~A4 landscape 150dpi
+    'background:#fff8f5',
+    'padding:32px',
+    'font-family:"DM Sans",sans-serif',
+    'color:#2d1033',
+    'box-sizing:border-box',
+    'z-index:-1'
+  ].join(';');
+
+  // Header
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:14px;border-bottom:3px solid #e0407a;padding-bottom:14px;margin-bottom:20px';
+  header.innerHTML = `
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🌙</div>
+    <div style="flex:1">
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#e0407a">Luna — Calendrier annuel du cycle</div>
+      <div style="font-size:.72rem;color:#9b7ea4">Généré le ${genDate} • ${state.cycles.length} cycles • Cycle de ${state.cycleLength} jours</div>
     </div>
-    <div class="pdf-cal-months-grid">`;
+    <div style="display:flex;gap:14px;font-size:.7rem;align-items:center">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:#ffd6e7;border-radius:3px;display:inline-block;border:1px solid #f0a0c0;flex-shrink:0"></span>Règles</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:#d1fae5;border-radius:3px;display:inline-block;border:1px solid #6ee7b7;flex-shrink:0"></span>Fertile</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:#fde68a;border-radius:3px;display:inline-block;border:1px solid #f59e0b;flex-shrink:0"></span>Ovulation</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:3px;display:inline-block;border:2px solid #e0407a;flex-shrink:0"></span>Aujourd'hui</span>
+    </div>`;
+  wrap.appendChild(header);
 
-  months.forEach(monthDate => {
-    const y = monthDate.getFullYear(), m = monthDate.getMonth();
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const firstDow = new Date(y, m, 1).getDay();
+  // Months grid — 4 per row to fit on A4 landscape pages of 12 months
+  const COLS = 4;
+  const ROWS_PER_PAGE = 3; // 4×3 = 12 months per page
+  const MONTHS_PER_PAGE = COLS * ROWS_PER_PAGE;
 
-    let calHtml = `<div class="pdf-cal-month">`;
-    calHtml += `<div class="pdf-month-title">${MONTHS_FR[m]} ${y}</div>`;
-    calHtml += `<div class="pdf-cal-grid">`;
-    // En-têtes jours
-    DAYS_FR.forEach(d => { calHtml += `<div class="pdf-cal-dow">${d}</div>`; });
-    // Cases vides
-    for (let i = 0; i < firstDow; i++) calHtml += `<div class="pdf-cal-day"></div>`;
-    // Jours
-    for (let d = 1; d <= daysInMonth; d++) {
-      const key = fmtISO(new Date(y, m, d));
-      const info = map[key];
-      let cls = 'pdf-cal-day';
-      if (info?.type === 'period')    cls += ' period';
-      else if (info?.type === 'ovulation') cls += ' ovulation';
-      else if (info?.type === 'fertile')   cls += ' fertile';
-      if (key === todayStr) cls += ' today-mark';
-      calHtml += `<div class="${cls}">${d}</div>`;
+  const DAYS_SHORT = ['D','L','M','M','J','V','S'];
+
+  // Group months into pages
+  const pages = [];
+  for (let i = 0; i < months.length; i += MONTHS_PER_PAGE) {
+    pages.push(months.slice(i, i + MONTHS_PER_PAGE));
+  }
+
+  pages.forEach((pageMonths, pageIdx) => {
+    if (pageIdx > 0) {
+      // Page separator
+      const sep = document.createElement('div');
+      sep.style.cssText = 'height:32px';
+      wrap.appendChild(sep);
     }
-    calHtml += `</div></div>`;
-    // Insert page-break after every 9 months (3 rows of 3 on landscape A4)
-    html += calHtml;
-    if ((months.indexOf(monthDate) + 1) % 9 === 0 && months.indexOf(monthDate) < months.length - 1) {
-      html += `</div><div style="page-break-after:always"></div><div class="pdf-cal-months-grid">`;
-    }
+
+    // Year label if page starts a new year
+    const pageYear = pageMonths[0].getFullYear();
+    const yearDiv = document.createElement('div');
+    yearDiv.style.cssText = 'font-family:"Playfair Display",serif;font-size:1.1rem;font-weight:700;color:#c084fc;margin-bottom:12px;letter-spacing:.05em';
+    yearDiv.textContent = pageYear;
+    wrap.appendChild(yearDiv);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = `display:grid;grid-template-columns:repeat(${COLS},1fr);gap:14px;margin-bottom:8px`;
+    wrap.appendChild(grid);
+
+    pageMonths.forEach(monthDate => {
+      const y = monthDate.getFullYear(), mo = monthDate.getMonth();
+      const daysInMonth = new Date(y, mo + 1, 0).getDate();
+      const firstDow = new Date(y, mo, 1).getDay();
+
+      const monthBox = document.createElement('div');
+      monthBox.style.cssText = 'background:#fff;border-radius:12px;padding:10px;border:1px solid rgba(255,107,157,.15);box-shadow:0 2px 8px rgba(180,40,100,.06)';
+
+      // Month title
+      const title = document.createElement('div');
+      title.style.cssText = 'font-family:"Playfair Display",serif;font-size:.82rem;font-weight:700;color:#e0407a;text-align:center;margin-bottom:6px;letter-spacing:.02em';
+      title.textContent = MONTHS_FR[mo] + ' ' + y;
+      monthBox.appendChild(title);
+
+      // Day grid
+      const calGrid = document.createElement('div');
+      calGrid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:2px';
+
+      // Day-of-week headers
+      DAYS_SHORT.forEach(d => {
+        const el = document.createElement('div');
+        el.style.cssText = 'text-align:center;font-size:.52rem;font-weight:700;color:#9b7ea4;padding:2px 0';
+        el.textContent = d;
+        calGrid.appendChild(el);
+      });
+
+      // Empty cells
+      for (let i = 0; i < firstDow; i++) {
+        const el = document.createElement('div');
+        el.style.cssText = 'aspect-ratio:1';
+        calGrid.appendChild(el);
+      }
+
+      // Day cells
+      for (let d = 1; d <= daysInMonth; d++) {
+        const key = fmtISO(new Date(y, mo, d));
+        const info = map[key];
+        const el = document.createElement('div');
+
+        let bg = 'transparent', color = '#2d1033', fw = '400', outline = '';
+        if (info?.type === 'period')    { bg = '#ffd6e7'; color = '#c0215a'; fw = '700'; }
+        else if (info?.type === 'ovulation') { bg = '#fde68a'; color = '#92400e'; fw = '700'; }
+        else if (info?.type === 'fertile')   { bg = '#d1fae5'; color = '#065f46'; fw = '600'; }
+        if (key === todayStr) { outline = '2px solid #e0407a'; }
+
+        el.style.cssText = [
+          'text-align:center',
+          'font-size:.6rem',
+          `font-weight:${fw}`,
+          `color:${color}`,
+          `background:${bg}`,
+          'border-radius:4px',
+          'padding:2px 1px',
+          'line-height:1.5',
+          outline ? `outline:${outline}` : ''
+        ].filter(Boolean).join(';');
+        el.textContent = d;
+        calGrid.appendChild(el);
+      }
+
+      monthBox.appendChild(calGrid);
+      grid.appendChild(monthBox);
+    });
   });
 
-  html += `</div>`;
-  html += `<div id="pdf-disclaimer" style="display:block !important;margin-top:20px;padding:12px 16px;background:#fff8f0;border-left:3px solid #f97316;border-radius:0 8px 8px 0;font-size:.72rem;color:#7c4a00;line-height:1.6">
-    ⚠️ <strong>Avertissement médical :</strong> Luna est une application d'aide au suivi du cycle menstruel à titre <strong>purement informatif</strong>. Les données et prévisions affichées sont des estimations basées sur des moyennes statistiques et ne constituent en aucun cas un avis médical. Elles ne remplacent pas une consultation avec un professionnel de santé. En cas de doute, d'irrégularités ou de symptômes inhabituels, consultez votre médecin ou gynécologue.
-  </div>`;
+  // Disclaimer
+  const disc = document.createElement('div');
+  disc.style.cssText = 'margin-top:20px;padding:10px 14px;background:#fff8f0;border-left:3px solid #f97316;border-radius:0 8px 8px 0;font-size:.68rem;color:#7c4a00;line-height:1.6';
+  disc.innerHTML = '⚠️ <strong>Avertissement :</strong> Luna est un outil de suivi informatif uniquement. Ces données ne constituent pas un avis médical.';
+  wrap.appendChild(disc);
 
-  container.innerHTML = html;
+  document.body.appendChild(wrap);
 
-  document.body.classList.add('pdf-calendar-mode');
+  // ── Capture with html2canvas then build PDF ──
+  const { jsPDF } = window.jspdf;
+
+  // Capture full height in one shot
   setTimeout(() => {
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('pdf-calendar-mode');
-      container.innerHTML = '';
-    }, 500);
-  }, 200);
+    html2canvas(wrap, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#fff8f5',
+      logging: false,
+      width: wrap.offsetWidth,
+      height: wrap.offsetHeight,
+      windowWidth: wrap.offsetWidth
+    }).then(canvas => {
+      document.body.removeChild(wrap);
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+
+      // A4 landscape in mm: 297 × 210
+      // A4 portrait: 210 × 297
+      // Choose orientation based on content width/height ratio
+      const A4_W = 297, A4_H = 210; // landscape mm
+      const margin = 8;
+      const contentW = A4_W - margin * 2;
+
+      // How many A4 pages do we need?
+      const scale = contentW / (imgW / 2); // canvas is 2x
+      const totalHeightMm = (imgH / 2) * scale;
+      const pageHeightMm = A4_H - margin * 2;
+      const numPages = Math.ceil(totalHeightMm / pageHeightMm);
+
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      for (let p = 0; p < numPages; p++) {
+        if (p > 0) pdf.addPage();
+
+        // Slice of image for this page
+        const srcY = Math.round((p * pageHeightMm / scale) * 2); // back to canvas px
+        const srcH = Math.round((pageHeightMm / scale) * 2);
+
+        // Create a sub-canvas for this page
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width  = imgW;
+        pageCanvas.height = Math.min(srcH, canvas.height - srcY);
+        const ctx = pageCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, srcY, imgW, pageCanvas.height, 0, 0, imgW, pageCanvas.height);
+
+        const pageImg = pageCanvas.toDataURL('image/jpeg', 0.92);
+        const pageImgH = (pageCanvas.height / 2) * scale;
+        pdf.addImage(pageImg, 'JPEG', margin, margin, contentW, pageImgH);
+      }
+
+      pdf.save('luna-calendrier-annuel-' + fmtISO(today()) + '.pdf');
+      showToast('✅ Calendrier PDF téléchargé !');
+
+    }).catch(err => {
+      document.body.removeChild(wrap);
+      console.error(err);
+      showToast('❌ Erreur de capture : ' + err.message);
+    });
+  }, 120);
 }
 
 function printTable() {
